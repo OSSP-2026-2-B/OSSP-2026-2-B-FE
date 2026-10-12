@@ -19,12 +19,12 @@ jobs:
         with:
           script: |
             const typeLabels = {
-              docs: '📑 DOCS',
-              feat: '🌱 FEAT',
-              style: '🎀 STYLE',
-              fix: '🔧 FIX',
-              refactor: '💎 REFACTOR',
-              chore: '🪜 CHORE',
+              docs: '📑 Docs',
+              feat: '🌱 Feat',
+              style: '🎀 Style',
+              fix: '🔧 Fix',
+              refactor: '💎 Refactor',
+              chore: '🪜 Chore',
             }
 
             const authorLabels = {
