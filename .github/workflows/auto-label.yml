@@ -19,17 +19,17 @@ jobs:
         with:
           script: |
             const typeLabels = {
-              docs: '📑 Docs',
-              feat: '🌱 Feat',
-              style: '🎀 Style',
-              fix: '🔧 Fix',
-              refactor: '💎 Refactor',
-              chore: '🪜 Chore',
+              docs: '📑 DOCS',
+              feat: '🌱 FEAT',
+              style: '🎀 STYLE',
+              fix: '🔧 FIX',
+              refactor: '💎 REFACTOR',
+              chore: '🪜 CHORE',
             }
 
             const authorLabels = {
               yooseolhee: '🐰 설희',
-              seojin15: '🐟 서진',
+              seojin15: '🐱 서진',
             }
 
             const item = context.payload.pull_request ?? context.payload.issue
