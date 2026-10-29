@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 112 112" role="img" aria-label="비켜비 앱 아이콘">
+  <rect width="112" height="112" rx="26" fill="#FFC93C"/>
+  <g transform="translate(18 18) scale(0.475)">
+    <path d="M80 10 C46 10 24 36 24 68 C24 106 80 152 80 152 C80 152 136 106 136 68 C136 36 114 10 80 10 Z" fill="#0E1B2C"/>
+    <path d="M80 34 C80 34 58 62 58 78 A22 22 0 0 0 102 78 C102 62 80 34 80 34 Z" fill="#FFC93C"/>
+  </g>
+</svg>
