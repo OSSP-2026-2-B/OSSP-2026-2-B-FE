@@ -1,0 +1,16 @@
+export { default as BuildingIcon } from './icons/building.svg?react';
+export { default as CafeIcon } from './icons/cafe.svg?react';
+export { default as ClockIcon } from './icons/clock.svg?react';
+export { default as DangerIcon } from './icons/danger.svg?react';
+export { default as HomeIcon } from './icons/home.svg?react';
+export { default as LeftIcon } from './icons/left.svg?react';
+export { default as NavigationIcon } from './icons/navigation.svg?react';
+export { default as RainIcon } from './icons/rain.svg?react';
+export { default as RightIcon } from './icons/right.svg?react';
+export { default as RouteIcon } from './icons/route.svg?react';
+export { default as SafeIcon } from './icons/safe.svg?react';
+export { default as SearchIcon } from './icons/search.svg?react';
+export { default as StarIcon } from './icons/star.svg?react';
+export { default as SubwayIcon } from './icons/subway.svg?react';
+export { default as UpsideDownIcon } from './icons/upside-down.svg?react';
+export { default as XIcon } from './icons/x.svg?react';
