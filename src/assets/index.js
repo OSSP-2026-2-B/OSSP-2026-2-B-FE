@@ -14,3 +14,5 @@ export { default as StarIcon } from './icons/star.svg?react';
 export { default as SubwayIcon } from './icons/subway.svg?react';
 export { default as UpsideDownIcon } from './icons/upside-down.svg?react';
 export { default as XIcon } from './icons/x.svg?react';
+export { default as AppIcon } from './icons/app-icon.svg?react';
+export { default as Symbol } from './icons/symbol.svg?react';
