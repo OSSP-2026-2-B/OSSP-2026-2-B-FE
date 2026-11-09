@@ -11,7 +11,7 @@ export default function MainPage() {
     return (
         <div className="flex flex-col h-dvh max-w-md mx-auto">
             <Header />
-            <main className="relative flex-1">
+            <main className="relative flex-1 overflow-hidden">
                 {loading && <p className="p-4 text-sm text-gray-500">지도 불러오는 중...</p>}
                 {error && <p className="p-4 text-sm text-red-500">지도를 불러오지 못했어요</p>}
 

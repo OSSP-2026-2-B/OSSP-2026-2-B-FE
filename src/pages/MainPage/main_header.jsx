@@ -2,7 +2,7 @@ import { AppIcon, LeftIcon } from "../../assets";
 
 export default function Header({ onBack }){
     return(
-        <header className="relative z-10 w-[403px] h-[62px] flex items-center px-[18px] gap-x-[10px]">
+        <header className="relative z-10 w-full h-[62px] flex items-center px-[18px] gap-x-[10px]">
             <button type="button" onClick={onBack} aria-label="뒤로 가기">
                 <LeftIcon />
             </button>
