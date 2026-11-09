@@ -1,5 +1,6 @@
 import Header from "./home_header";
 import { Map, useKakaoLoader } from "react-kakao-maps-sdk";
+import RouteSearchCard from "./home_route_card";
 
 export default function HomePage() {
     const [loading, error] = useKakaoLoader({
@@ -14,11 +15,16 @@ export default function HomePage() {
                 {error && <p className="p-4 text-sm text-red-500">지도를 불러오지 못했어요</p>}
 
                 {!loading && !error && (
+                    <>
                     <Map
                         center = {{lat: 37.4979, lng: 127.0276}}
                         level={4}
                         className="absolute inset-0"
                     />
+                    <div className="absolute top-4 left-4 right-4 z-10">
+                        <RouteSearchCard />
+                    </div>
+                    </>
                 )}
             </main>
         </div>
