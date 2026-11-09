@@ -1,8 +1,9 @@
-import Header from "./home_header";
+import Header from "./main_header";
 import { Map, useKakaoLoader } from "react-kakao-maps-sdk";
-import RouteSearchCard from "./home_route_card";
+import RouteSearchCard from "./main_route_card";
+import RouteBottomSheet from "./main_bottom_sheet";
 
-export default function HomePage() {
+export default function MainPage() {
     const [loading, error] = useKakaoLoader({
         appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
     });
@@ -23,6 +24,9 @@ export default function HomePage() {
                     />
                     <div className="absolute top-4 left-4 right-4 z-10">
                         <RouteSearchCard />
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 z-20">
+                        <RouteBottomSheet />
                     </div>
                     </>
                 )}
