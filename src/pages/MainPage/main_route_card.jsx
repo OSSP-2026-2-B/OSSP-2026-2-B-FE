@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { Search, ArrowRightLeft, ShieldCheck } from "lucide-react";
+import { Search, ArrowRightLeft } from "lucide-react";
 
 export default function RouteSearchCard() {
     const [from, setFrom] = useState("신논현역 5번 출구");
     const [to, setTo] = useState("역삼초등학교");
-    const [mode, setMode] = useState("safe"); // "fast" | "safe"
 
     // 출발 ↔ 도착 바꾸기
     const swap = () => {
@@ -13,8 +12,7 @@ export default function RouteSearchCard() {
     };
 
     return (
-        <div className="flex flex-col gap-3">
-        {/* ── 출발/도착 카드 ── */}
+        // ── 출발/도착 카드 ──
         <div className="flex items-center gap-2 p-4 bg-white rounded-2xl shadow-lg">
             {/* 왼쪽: 출발/도착 두 줄 */}
             <div className="relative flex-1 min-w-0">
@@ -23,7 +21,7 @@ export default function RouteSearchCard() {
 
             {/* 출발 */}
             <div className="flex items-center gap-3 pb-3 border-b border-gray-100">
-                <span className="w-3 h-3 shrink-0 rounded-full border-[3px] border-[#3E6B50] bg-white" />
+                <span className="w-3 h-3 shrink-0 rounded-full border-[3px] border-[#FFC93C] bg-white" />
                 <div className="min-w-0">
                 <p className="text-xs text-gray-500">출발</p>
                 <p className="font-bold text-gray-900 truncate">{from}</p>
@@ -59,35 +57,6 @@ export default function RouteSearchCard() {
                 <Search size={22} />
             </button>
             </div>
-        </div>
-
-        {/* ── 빠른 길 / 안전 우선 토글 ── */}
-        <div className="flex gap-2">
-            <button
-            type="button"
-            onClick={() => setMode("fast")}
-            className={`flex-1 h-11 rounded-full border shadow-sm text-sm transition-colors ${
-                mode === "fast"
-                ? "bg-[#E8F1EB] border-[#3E6B50] text-[#3E6B50] font-bold"
-                : "bg-white border-gray-200 text-gray-500"
-            }`}
-            >
-            빠른 길
-            </button>
-
-            <button
-            type="button"
-            onClick={() => setMode("safe")}
-            className={`flex flex-1 items-center justify-center gap-1.5 h-11 rounded-full border shadow-sm text-sm transition-colors ${
-                mode === "safe"
-                ? "bg-[#E8F1EB] border-[#3E6B50] text-[#3E6B50] font-bold"
-                : "bg-white border-gray-200 text-gray-500"
-            }`}
-            >
-            <ShieldCheck size={18} />
-            안전 우선
-            </button>
-        </div>
         </div>
     );
 }

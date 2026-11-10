@@ -112,7 +112,7 @@ export default function RouteBottomSheet() {
             {/* 제목 */}
             <div className="flex items-end justify-between mb-2">
             <div>
-                <p className="text-xs font-medium text-[#3E6B50]">추천 경로 비교</p>
+                <p className="text-xs font-medium text-[#0E1B2C]">추천 경로 비교</p>
                 <h2 className="text-xl font-bold text-gray-900">조금 돌아도, 더 안전하게</h2>
             </div>
             <span className="text-xs text-gray-400">2분 전 갱신</span>
@@ -143,7 +143,7 @@ export default function RouteBottomSheet() {
         {/* ── 출발 버튼 ── */}
         <button
             type="button"
-            className="flex items-center justify-center gap-2 shrink-0 w-full h-11 rounded-2xl bg-[#3E6B50] text-white font-bold shadow-md active:scale-[0.98] transition-transform"
+            className="flex items-center justify-center gap-2 shrink-0 w-full h-11 rounded-2xl bg-[#FFC93C] text-[#0E1B2C] font-bold shadow-md active:scale-[0.98] transition-transform"
         >
             <NavigationIcon className="w-5 h-5" />
             {selected.name}로 출발
@@ -161,13 +161,13 @@ function RouteCard({ route, selected, onSelect }) {
         type="button"
         onClick={onSelect}
         className={`flex items-center gap-3 w-full p-3 text-left rounded-2xl border transition-colors ${
-            selected ? "border-[#3E6B50] bg-[#F7FAF8]" : "border-gray-200 bg-white"
+            selected ? "border-[#FFC93C] bg-[#FFFBEB]" : "border-gray-200 bg-white"
         }`}
         >
         {/* 라디오 동그라미 */}
         <span
             className={`w-5 h-5 shrink-0 rounded-full ${
-            selected ? "border-[6px] border-[#3E6B50]" : "border-2 border-gray-300"
+            selected ? "border-[6px] border-[#FFC93C]" : "border-2 border-gray-300"
             }`}
         />
 
@@ -175,15 +175,15 @@ function RouteCard({ route, selected, onSelect }) {
         <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
             {isSafe ? (
-                <SafeIcon className="w-5 h-5 text-[#3E6B50]" />
+                <SafeIcon className="w-5 h-5 text-[#0E1B2C]" />
             ) : (
                 <ClockIcon className="w-5 h-5 text-gray-800" />
             )}
-            <span className={`text-sm font-bold ${isSafe ? "text-[#3E6B50]" : "text-gray-900"}`}>
+            <span className={`text-sm font-bold ${isSafe ? "text-[#0E1B2C]" : "text-gray-900"}`}>
                 {route.name}
             </span>
             {route.recommended && (
-                <span className="px-2 py-0.5 rounded-full bg-[#E8F1EB] text-xs text-[#3E6B50]">
+                <span className="px-2 py-0.5 rounded-full bg-[#FFF4D1] text-xs text-[#0E1B2C]">
                 추천
                 </span>
             )}
@@ -198,7 +198,7 @@ function RouteCard({ route, selected, onSelect }) {
             <p className="flex items-center gap-1.5 mt-0.5 text-xs text-gray-600">
                 <span className="px-1.5 py-0.5 rounded bg-gray-100">+{route.extraTime}분</span>
                 위험 구간 {route.totalRisk}개 중
-                <span className="font-medium text-[#3E6B50]">{route.avoided}개 회피</span>
+                <span className="font-medium text-[#0E1B2C]">{route.avoided}개 회피</span>
             </p>
             ) : (
             <p className="flex items-center gap-1.5 mt-0.5 text-xs text-[#C8553D]">
@@ -211,7 +211,7 @@ function RouteCard({ route, selected, onSelect }) {
         {/* 오른쪽 위험도 박스 */}
         <div
             className={`flex flex-col items-center justify-center w-14 h-16 shrink-0 rounded-xl ${
-            isSafe ? "bg-[#E8F1EB] text-[#3E6B50]" : "bg-[#FBE9E5] text-[#C8553D]"
+            isSafe ? "bg-[#FFF4D1] text-[#0E1B2C]" : "bg-[#FBE9E5] text-[#C8553D]"
             }`}
         >
             <span className="text-xs">위험도</span>
