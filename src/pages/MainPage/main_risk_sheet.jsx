@@ -28,12 +28,16 @@ const RAIN_TICKS = [0, 30, 50, 70, 100];
 const RAIN_MAX = 100;
 
 /**
- * 구간별 위험 근거 바텀시트 모달
- * @param {boolean} open      열림 여부
- * @param {function} onClose  닫기 콜백
- * @param {object} route      현재 선택된 경로 (hazards, rainfall 포함)
+ * 위험 근거 바텀시트 모달
+ * - 경로 전체: 그 경로가 피하는(또는 지나는) 모든 위험 구간
+ * - 지도 원 클릭: 그 구간 하나만
+ * @param {boolean} open        열림 여부
+ * @param {function} onClose    닫기 콜백
+ * @param {string} title        시트 제목
+ * @param {object} rainfall     { value, time }
+ * @param {object[]} hazards    표시할 위험 구간 목록
  */
-export default function RiskReasonSheet({ open, onClose, route }) {
+export default function RiskReasonSheet({ open, onClose, title, rainfall, hazards = [] }) {
     // ESC 키로 닫기
     useEffect(() => {
         if (!open) return;
@@ -41,10 +45,6 @@ export default function RiskReasonSheet({ open, onClose, route }) {
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
     }, [open, onClose]);
-
-    const hazards = route?.hazards ?? [];
-    const rainfall = route?.rainfall;
-    const isSafe = route?.id === "safe";
 
     return (
         <div
@@ -71,7 +71,7 @@ export default function RiskReasonSheet({ open, onClose, route }) {
                 {/* 헤더 */}
                 <div className="flex items-center justify-between shrink-0 px-5 pt-5 pb-3">
                     <h2 id="risk-sheet-title" className="text-lg font-bold text-gray-900">
-                        {isSafe ? "왜 이 길을 피하나요?" : "이 경로의 위험 구간"}
+                        {title}
                     </h2>
                     <button
                         type="button"
@@ -182,8 +182,8 @@ function HazardCard({ hazard }) {
 // ── 데이터 출처 카드 ──
 function SourceCard() {
     return (
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-[#EAF5EE]">
-            <SafeIcon className="w-5 h-5 shrink-0 text-[#2E7D4F]" />
+        <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-100">
+            <SafeIcon className="w-5 h-5 shrink-0 text-gray-600" />
             <div className="min-w-0">
                 <p className="text-xs font-medium text-gray-900">공공데이터 기반 추정</p>
                 <p className="mt-0.5 text-[11px] text-gray-500">

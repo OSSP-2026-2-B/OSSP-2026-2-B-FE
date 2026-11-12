@@ -1,23 +1,43 @@
 import Header from "./main_header";
-import { Map, useKakaoLoader } from "react-kakao-maps-sdk";
+import { Map, Circle, useKakaoLoader } from "react-kakao-maps-sdk";
 import RouteSearchCard from "./main_route_card";
 import RouteBottomSheet from "./main_bottom_sheet";
 import RiskReasonSheet from "./main_risk_sheet";
+import { HAZARDS, RAINFALL } from "./mock_data";
 import { useCallback, useState } from "react";
+
+// 지도에 원으로 표시할 위험 구간 (area 좌표가 있는 것만)
+const MAP_HAZARDS = Object.values(HAZARDS).filter((h) => h.area);
 
 export default function MainPage() {
     const [loading, error] = useKakaoLoader({
         appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
     });
 
-    // 구간별 위험 근거 시트
+    // 위험 근거 시트 (내용은 닫힐 때도 유지해서 내려가는 애니메이션 동안 비지 않게)
     const [riskOpen, setRiskOpen] = useState(false);
-    const [riskRoute, setRiskRoute] = useState(null);
+    const [riskContent, setRiskContent] = useState({ title: "", rainfall: null, hazards: [] });
 
-    const openRiskSheet = (route) => {
-        setRiskRoute(route);
+    // 바텀시트 "구간별 위험 근거 보기" → 경로의 모든 위험 구간
+    const openRouteRisk = (route) => {
+        setRiskContent({
+            title: route.id === "safe" ? "왜 이 길을 피하나요?" : "이 경로의 위험 구간",
+            rainfall: route.rainfall,
+            hazards: route.hazards,
+        });
         setRiskOpen(true);
     };
+
+    // 지도 위 빨간 원 클릭 → 그 구간 하나만
+    const openHazardRisk = (hazard) => {
+        setRiskContent({
+            title: "왜 이 구간을 피하나요?",
+            rainfall: RAINFALL,
+            hazards: [hazard],
+        });
+        setRiskOpen(true);
+    };
+
     const closeRiskSheet = useCallback(() => setRiskOpen(false), []);
 
     return (
@@ -33,17 +53,32 @@ export default function MainPage() {
                         center = {{lat: 37.4979, lng: 127.0276}}
                         level={4}
                         className="absolute inset-0"
-                    />
+                    >
+                        {MAP_HAZARDS.map((hazard) => (
+                            <Circle
+                                key={hazard.id}
+                                center={hazard.area.center}
+                                radius={hazard.area.radius}
+                                strokeWeight={2}
+                                strokeColor="#C8553D"
+                                strokeOpacity={0.9}
+                                strokeStyle="dash"
+                                fillColor="#E8705A"
+                                fillOpacity={0.3}
+                                onClick={() => openHazardRisk(hazard)}
+                            />
+                        ))}
+                    </Map>
                     <div className="absolute top-4 left-4 right-4 z-10">
                         <RouteSearchCard />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 z-20">
-                        <RouteBottomSheet onShowRisk={openRiskSheet} />
+                        <RouteBottomSheet onShowRisk={openRouteRisk} />
                     </div>
                     <RiskReasonSheet
                         open={riskOpen}
                         onClose={closeRiskSheet}
-                        route={riskRoute}
+                        {...riskContent}
                     />
                     </>
                 )}
