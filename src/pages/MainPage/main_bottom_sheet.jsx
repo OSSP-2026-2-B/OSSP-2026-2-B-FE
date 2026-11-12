@@ -7,29 +7,7 @@ import {
     NavigationIcon,
 } from "../../assets/index";
 
-// 임시 데이터 (나중에 백엔드 응답으로 교체)
-const ROUTES = [
-    {
-        id: "safe",
-        name: "안전 경로",
-        time: 22,
-        distance: 1.7,
-        risk: 16,
-        recommended: true,
-        extraTime: 4,
-        totalRisk: 4,
-        avoided: 3,
-    },
-    {
-        id: "fast",
-        name: "빠른 경로",
-        time: 18,
-        distance: 1.4,
-        risk: 58,
-        recommended: false,
-        totalRisk: 4,
-    },
-    ];
+import { ROUTES } from "./mock_data";
 
     // 시트 크기 (px)
     const SHEET_HEIGHT = 388;
@@ -37,7 +15,7 @@ const ROUTES = [
     const MAX_OFFSET = SHEET_HEIGHT - PEEK_HEIGHT; // 최대로 내려가는 거리
     const DRAG_THRESHOLD = 60; // 이만큼 이상 끌어야 열림/닫힘이 바뀜
 
-export default function RouteBottomSheet() {
+export default function RouteBottomSheet({ onShowRisk }) {
     const [selectedId, setSelectedId] = useState("safe");
     const [collapsed, setCollapsed] = useState(false);
     const [dragOffset, setDragOffset] = useState(null); // 드래그 중일 때만 숫자, 아니면 null
@@ -133,6 +111,7 @@ export default function RouteBottomSheet() {
             {/* 근거 보기 링크 */}
             <button
             type="button"
+            onClick={() => onShowRisk?.(selected)}
             className="flex items-center justify-center gap-1 w-full py-2 text-sm text-gray-600"
             >
             구간별 위험 근거 보기
