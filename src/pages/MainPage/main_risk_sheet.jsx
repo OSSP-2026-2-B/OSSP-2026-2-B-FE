@@ -49,7 +49,7 @@ export default function RiskReasonSheet({ open, onClose, title, rainfall, hazard
     return (
         <div
             className={`absolute inset-0 z-30 ${open ? "" : "pointer-events-none"}`}
-            aria-hidden={!open}
+            inert={!open}
         >
             {/* ── 배경 딤 ── */}
             <div
