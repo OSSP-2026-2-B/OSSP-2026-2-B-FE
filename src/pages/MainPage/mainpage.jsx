@@ -2,11 +2,23 @@ import Header from "./main_header";
 import { Map, useKakaoLoader } from "react-kakao-maps-sdk";
 import RouteSearchCard from "./main_route_card";
 import RouteBottomSheet from "./main_bottom_sheet";
+import RiskReasonSheet from "./main_risk_sheet";
+import { useCallback, useState } from "react";
 
 export default function MainPage() {
     const [loading, error] = useKakaoLoader({
         appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
     });
+
+    // 구간별 위험 근거 시트
+    const [riskOpen, setRiskOpen] = useState(false);
+    const [riskRoute, setRiskRoute] = useState(null);
+
+    const openRiskSheet = (route) => {
+        setRiskRoute(route);
+        setRiskOpen(true);
+    };
+    const closeRiskSheet = useCallback(() => setRiskOpen(false), []);
 
     return (
         <div className="flex flex-col h-dvh max-w-md mx-auto">
@@ -26,8 +38,13 @@ export default function MainPage() {
                         <RouteSearchCard />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 z-20">
-                        <RouteBottomSheet />
+                        <RouteBottomSheet onShowRisk={openRiskSheet} />
                     </div>
+                    <RiskReasonSheet
+                        open={riskOpen}
+                        onClose={closeRiskSheet}
+                        route={riskRoute}
+                    />
                     </>
                 )}
             </main>
