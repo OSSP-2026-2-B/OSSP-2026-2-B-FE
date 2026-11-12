@@ -1,15 +1,17 @@
 import Header from "./main_header";
 import { Map, Circle, useKakaoLoader } from "react-kakao-maps-sdk";
-import RouteSearchCard from "./main_route_card";
+import RouteSearchCard from "../../shared/ui/RouteSearchCard";
 import RouteBottomSheet from "./main_bottom_sheet";
 import RiskReasonSheet from "./main_risk_sheet";
 import { HAZARDS, RAINFALL } from "./mock_data";
 import { useCallback, useState } from "react";
+import { useNavigate } from "react-router";
 
 // 지도에 원으로 표시할 위험 구간 (area 좌표가 있는 것만)
 const MAP_HAZARDS = Object.values(HAZARDS).filter((h) => h.area);
 
 export default function MainPage() {
+    const navigate = useNavigate();
     const [loading, error] = useKakaoLoader({
         appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
     });
@@ -42,7 +44,7 @@ export default function MainPage() {
 
     return (
         <div className="flex flex-col h-dvh max-w-md mx-auto">
-            <Header />
+            <Header onBack={() => navigate('/home')} />
             <main className="relative flex-1 overflow-hidden">
                 {loading && <p className="p-4 text-sm text-gray-500">지도 불러오는 중...</p>}
                 {error && <p className="p-4 text-sm text-red-500">지도를 불러오지 못했어요</p>}
@@ -70,7 +72,7 @@ export default function MainPage() {
                         ))}
                     </Map>
                     <div className="absolute top-4 left-4 right-4 z-10">
-                        <RouteSearchCard />
+                        <RouteSearchCard defaultTo="역삼초등학교" />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 z-20">
                         <RouteBottomSheet onShowRisk={openRouteRisk} />
