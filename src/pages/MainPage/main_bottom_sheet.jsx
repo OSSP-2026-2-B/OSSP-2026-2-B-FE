@@ -6,6 +6,7 @@ import {
     RightIcon,
     NavigationIcon,
 } from "../../assets/index";
+import PrimaryButton from "../../shared/ui/PrimaryButton";
 
 import { ROUTES } from "./mock_data";
 
@@ -120,13 +121,13 @@ export default function RouteBottomSheet({ onShowRisk }) {
         </div>
 
         {/* ── 출발 버튼 ── */}
-        <button
-            type="button"
-            className="flex items-center justify-center gap-2 shrink-0 w-full h-11 rounded-2xl bg-[#FFC93C] text-[#0E1B2C] font-bold shadow-md active:scale-[0.98] transition-transform"
+        <PrimaryButton
+            icon={NavigationIcon}
+            className="shrink-0 shadow-md active:scale-[0.98] transition-transform"
+            style={{ backgroundColor: "#FFC93C", color: "#0E1B2C" }}
         >
-            <NavigationIcon className="w-5 h-5" />
             {selected.name}로 출발
-        </button>
+        </PrimaryButton>
         </section>
     );
 }
