@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { SearchIcon, UpsideDownIcon } from "../../assets";
 
 export default function RouteSearchCard({ from, to, onFromChange, onToChange, defaultTo = '' }) {
+    const navigate = useNavigate();
     const [localFrom, setLocalFrom] = useState('신논현역 5번 출구');
     const [localTo, setLocalTo] = useState(defaultTo);
     const currentFrom = from ?? localFrom;
@@ -25,22 +27,22 @@ export default function RouteSearchCard({ from, to, onFromChange, onToChange, de
             <span className="absolute left-[5px] top-9 bottom-9 border-l border-dashed border-gray-400" aria-hidden="true" />
 
             {/* 출발 */}
-            <div className="flex items-center gap-3 pb-3">
+            <button type="button" onClick={() => navigate('/search')} className="flex w-full items-center gap-3 pb-3 text-left">
                 <span className="relative z-10 w-3 h-3 shrink-0 rounded-full border-[3px] border-[#FFC93C] bg-white" />
                 <div className="min-w-0 flex-1">
                 <p className="text-xs text-gray-500">출발</p>
-                <input aria-label="출발지" className="w-full min-w-0 bg-transparent font-bold text-gray-900 outline-none" value={currentFrom} onChange={(event) => changeFrom(event.target.value)} placeholder="출발지를 입력하세요" />
+                <p className={`truncate ${currentFrom ? 'font-bold text-gray-900' : 'font-normal text-gray-500'}`}>{currentFrom || '출발지를 입력하세요'}</p>
                 </div>
-            </div>
+            </button>
 
             {/* 도착 */}
-            <div className="flex items-center gap-3 pt-3">
+            <button type="button" onClick={() => navigate('/search')} className="flex w-full items-center gap-3 pt-3 text-left">
                 <span className="relative z-10 w-3 h-3 shrink-0 rounded-sm bg-[#C8553D]" />
                 <div className="min-w-0 flex-1">
                 <p className="text-xs text-gray-500">도착</p>
-                <input aria-label="도착지" className="w-full min-w-0 bg-transparent font-bold text-gray-900 outline-none placeholder:font-normal placeholder:text-gray-500" value={currentTo} onChange={(event) => changeTo(event.target.value)} placeholder="목적지를 입력하세요" />
+                <p className={`truncate ${currentTo ? 'font-bold text-gray-900' : 'font-normal text-gray-500'}`}>{currentTo || '목적지를 입력하세요'}</p>
                 </div>
-            </div>
+            </button>
             </div>
 
             {/* 가운데: 바꾸기 버튼 */}
@@ -55,10 +57,10 @@ export default function RouteSearchCard({ from, to, onFromChange, onToChange, de
 
             {/* 오른쪽: 검색 버튼 두 개 */}
             <div className="flex flex-col gap-6">
-            <button type="button" aria-label="출발지 검색" className="p-1 text-gray-600">
+            <button type="button" onClick={() => navigate('/search')} aria-label="출발지 검색" className="p-1 text-gray-600">
                 <SearchIcon size={22} />
             </button>
-            <button type="button" aria-label="도착지 검색" className="p-1 text-gray-600">
+            <button type="button" onClick={() => navigate('/search')} aria-label="도착지 검색" className="p-1 text-gray-600">
                 <SearchIcon size={22} />
             </button>
             </div>

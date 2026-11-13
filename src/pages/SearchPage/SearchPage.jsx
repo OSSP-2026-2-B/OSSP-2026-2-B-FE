@@ -7,7 +7,7 @@ import {
   SearchIcon,
   SubwayIcon,
 } from '../../assets'
-import { Link } from 'react-router'
+import { useNavigate } from 'react-router'
 import LocationCard from './LocationCard'
 
 const recentLocations = [
@@ -21,12 +21,14 @@ const recentLocations = [
 ]
 
 export default function SearchPage() {
+  const navigate = useNavigate()
+
   return (
     <main className="mx-auto min-h-dvh w-full max-w-md bg-white px-4 pt-5 pb-11">
       <header className="flex items-center gap-6">
-        <Link to="/home" aria-label="뒤로 가기" className="flex size-6 shrink-0 items-center justify-center text-black">
+        <button type="button" onClick={() => navigate(-1)} aria-label="뒤로 가기" className="flex size-6 shrink-0 items-center justify-center text-black">
           <LeftIcon className="size-6" aria-hidden="true" />
-        </Link>
+        </button>
         <div className="flex h-12 min-w-0 flex-1 items-center gap-2 rounded-xl border border-gray-200 px-4 text-gray-500">
           <SearchIcon className="size-5 shrink-0" aria-hidden="true" />
           <input
