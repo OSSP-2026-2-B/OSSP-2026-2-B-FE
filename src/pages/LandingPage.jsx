@@ -1,5 +1,6 @@
 import { NavigationIcon, RainIcon, RouteIcon, SafeIcon, AppIcon } from '../assets';
 import PrimaryButton from '../shared/ui/PrimaryButton.jsx';
+import { useNavigate } from 'react-router';
 
 const features = [
   { icon: SafeIcon, label: <>침수 위험 구간<br />자동 회피</> },
@@ -8,6 +9,7 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const navigate = useNavigate();
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[403px] flex-col justify-between px-4 py-12">
       <div className="pt-12">
@@ -32,7 +34,7 @@ export default function LandingPage() {
         </section>
       </div>
 
-      <PrimaryButton className="mt-12" icon={NavigationIcon}>길 찾기 시작</PrimaryButton>
+      <PrimaryButton className="mt-12" icon={NavigationIcon} onClick={() => navigate('/home')}>길 찾기 시작</PrimaryButton>
     </main>
   );
 }
