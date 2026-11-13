@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Info } from 'lucide-react';
 import {
@@ -7,6 +6,7 @@ import {
 } from '../../assets';
 import PrimaryButton from '../../shared/ui/PrimaryButton';
 import RouteSearchCard from '../../shared/ui/RouteSearchCard';
+import { useRouteSearch } from '../../shared/routeSearchContext';
 import { RAINFALL } from '../MainPage/mock_data';
 
 const favorites = [
@@ -17,8 +17,7 @@ const favorites = [
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const [from, setFrom] = useState('신논현역 5번 출구');
-  const [to, setTo] = useState('');
+  const { setTo } = useRouteSearch();
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-md px-4 pb-12">
@@ -30,7 +29,7 @@ export default function HomePage() {
 
       {/* 경로 검색 */}
       <section className="mt-9" aria-label="경로 검색">
-        <RouteSearchCard from={from} to={to} onFromChange={setFrom} onToChange={setTo} />
+        <RouteSearchCard page="/home" />
         <PrimaryButton className="mt-5" icon={NavigationIcon} onClick={() => navigate('/main')}>안전 경로 찾기</PrimaryButton>
       </section>
 

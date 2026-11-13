@@ -1,20 +1,22 @@
-import { useState } from "react";
 import { useNavigate } from "react-router";
 import { SearchIcon, UpsideDownIcon } from "../../assets";
+import { useRouteSearch } from "../routeSearchContext";
 
-export default function RouteSearchCard({ from, to, onFromChange, onToChange, defaultTo = '' }) {
+export default function RouteSearchCard({ page, defaultTo = '' }) {
     const navigate = useNavigate();
-    const [localFrom, setLocalFrom] = useState('신논현역 5번 출구');
-    const [localTo, setLocalTo] = useState(defaultTo);
-    const currentFrom = from ?? localFrom;
-    const currentTo = to ?? localTo;
-    const changeFrom = onFromChange ?? setLocalFrom;
-    const changeTo = onToChange ?? setLocalTo;
+    const { from, to, setFrom, setTo, setSearchTarget } = useRouteSearch();
+    const currentFrom = from;
+    const currentTo = to || defaultTo;
+    const openSearch = (field) => {
+        setSearchTarget({ page, field });
+        if (defaultTo && !to) setTo(defaultTo);
+        navigate('/search');
+    };
 
     // 출발 ↔ 도착 바꾸기
     const swap = () => {
-        changeFrom(currentTo);
-        changeTo(currentFrom);
+        setFrom(currentTo);
+        setTo(currentFrom);
     };
 
     return (
@@ -27,7 +29,7 @@ export default function RouteSearchCard({ from, to, onFromChange, onToChange, de
             <span className="absolute left-[5px] top-9 bottom-9 border-l border-dashed border-gray-400" aria-hidden="true" />
 
             {/* 출발 */}
-            <button type="button" onClick={() => navigate('/search')} className="flex w-full items-center gap-3 pb-3 text-left">
+            <button type="button" onClick={() => openSearch('from')} className="flex w-full items-center gap-3 pb-3 text-left">
                 <span className="relative z-10 w-3 h-3 shrink-0 rounded-full border-[3px] border-[#FFC93C] bg-white" />
                 <div className="min-w-0 flex-1">
                 <p className="text-xs text-gray-500">출발</p>
@@ -36,7 +38,7 @@ export default function RouteSearchCard({ from, to, onFromChange, onToChange, de
             </button>
 
             {/* 도착 */}
-            <button type="button" onClick={() => navigate('/search')} className="flex w-full items-center gap-3 pt-3 text-left">
+            <button type="button" onClick={() => openSearch('to')} className="flex w-full items-center gap-3 pt-3 text-left">
                 <span className="relative z-10 w-3 h-3 shrink-0 rounded-sm bg-[#C8553D]" />
                 <div className="min-w-0 flex-1">
                 <p className="text-xs text-gray-500">도착</p>
@@ -57,10 +59,10 @@ export default function RouteSearchCard({ from, to, onFromChange, onToChange, de
 
             {/* 오른쪽: 검색 버튼 두 개 */}
             <div className="flex flex-col gap-6">
-            <button type="button" onClick={() => navigate('/search')} aria-label="출발지 검색" className="p-1 text-gray-600">
+            <button type="button" onClick={() => openSearch('from')} aria-label="출발지 검색" className="p-1 text-gray-600">
                 <SearchIcon size={22} />
             </button>
-            <button type="button" onClick={() => navigate('/search')} aria-label="도착지 검색" className="p-1 text-gray-600">
+            <button type="button" onClick={() => openSearch('to')} aria-label="도착지 검색" className="p-1 text-gray-600">
                 <SearchIcon size={22} />
             </button>
             </div>

@@ -1,6 +1,7 @@
 import { RouterProvider } from 'react-router/dom'
 import { router } from './router/router'
+import RouteSearchProvider from '../shared/RouteSearchProvider'
 
 export default function App() {
-  return <RouterProvider router={router} />
+  return <RouteSearchProvider><RouterProvider router={router} /></RouteSearchProvider>
 }

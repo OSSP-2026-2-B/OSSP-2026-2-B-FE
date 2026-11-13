@@ -8,6 +8,7 @@ import {
   SubwayIcon,
 } from '../../assets'
 import { useNavigate } from 'react-router'
+import { useRouteSearch } from '../../shared/routeSearchContext'
 import LocationCard from './LocationCard'
 
 const recentLocations = [
@@ -22,6 +23,13 @@ const recentLocations = [
 
 export default function SearchPage() {
   const navigate = useNavigate()
+  const { searchTarget, setFrom, setTo } = useRouteSearch()
+
+  const selectLocation = (location) => {
+    if (searchTarget.field === 'from') setFrom(location.name)
+    else setTo(location.name)
+    navigate(searchTarget.page)
+  }
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-md bg-white px-4 pt-5 pb-11">
@@ -46,7 +54,7 @@ export default function SearchPage() {
           <span className="text-xs font-semibold text-gray-500">편집</span>
         </div>
         <ul className="overflow-hidden rounded-2xl border border-gray-200">
-          {recentLocations.map((location) => <LocationCard key={location.id} location={location} />)}
+          {recentLocations.map((location) => <LocationCard key={location.id} location={location} onSelect={selectLocation} />)}
         </ul>
         <p className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
           <ClockIcon className="size-4" aria-hidden="true" />

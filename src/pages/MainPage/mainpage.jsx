@@ -72,7 +72,7 @@ export default function MainPage() {
                         ))}
                     </Map>
                     <div className="absolute top-4 left-4 right-4 z-10">
-                        <RouteSearchCard defaultTo="역삼초등학교" />
+                        <RouteSearchCard page="/main" defaultTo="역삼초등학교" />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 z-20">
                         <RouteBottomSheet onShowRisk={openRouteRisk} />
