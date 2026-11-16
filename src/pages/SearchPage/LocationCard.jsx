@@ -1,7 +1,7 @@
 import { RightIcon } from '../../assets'
 
 export default function LocationCard({ location, onSelect }) {
-  const { name, address, date, Icon } = location
+  const { name, address, date } = location
 
   return (
     <li className="border-b border-gray-200 last:border-b-0">

@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router';
-import { Info } from 'lucide-react';
 import {
-  AppIcon, BuildingIcon, DangerIcon, HomeIcon, NavigationIcon, RainIcon, StarIcon,
+  AppIcon, BuildingIcon, DangerIcon, HomeIcon, NavigationIcon,
   SubwayIcon,
 } from '../../assets';
 import PrimaryButton from '../../shared/ui/PrimaryButton';
@@ -56,7 +55,7 @@ export default function HomePage() {
       <section className="mt-8" aria-labelledby="favorite-heading">
         <h2 id="favorite-heading" className="flex items-center gap-2 text-lg font-bold">추천 목적지</h2>
         <div className="mt-4 grid grid-cols-3 gap-2">
-          {favorites.map(({ label, address, icon: Icon }, index) => (
+          {favorites.map(({ label, address, icon: Icon }) => (
             <button key={label} type="button" onClick={() => setTo(address)} className="flex min-w-0 flex-col items-center rounded-2xl border border-gray-200 bg-white px-2 py-3 text-center active:bg-gray-100">
               <span className={`flex size-12 items-center justify-center rounded-xl bg-gray-200`} ><Icon className="size-6" aria-hidden="true" /></span>
               <span className="mt-2 text-sm font-bold">{label}</span>

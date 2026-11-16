@@ -1,7 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { AppIcon } from '../assets';
 
 const VIEW_W = 400;
 const VIEW_H = 500;
