@@ -5,9 +5,9 @@ import { DangerIcon, RainIcon, RouteIcon, SafeIcon, XIcon } from "../../assets/i
 const LEVEL_STYLE = {
     danger: {
         label: "위험",
-        card: "bg-[#FBE9E5]",
-        icon: "text-[#C8553D]",
-        badge: "text-[#C8553D]",
+        card: "bg-[#FFF0ED]",
+        icon: "text-[#E24739]",
+        badge: "text-[#E24739]",
     },
     caution: {
         label: "주의",
@@ -77,7 +77,7 @@ export default function RiskReasonSheet({ open, onClose, title, rainfall, hazard
                         type="button"
                         onClick={onClose}
                         aria-label="닫기"
-                        className="p-1 -mr-1 text-gray-700"
+                        className="p-1 -mr-1 text-[#1A2A47]"
                     >
                         <XIcon className="w-6 h-6" />
                     </button>
@@ -107,27 +107,27 @@ function RainfallCard({ rainfall }) {
     const percent = Math.min(Math.max(rainfall.value / RAIN_MAX, 0), 1) * 100;
 
     return (
-        <div className="p-4 rounded-2xl bg-[#EAF2FD]">
+        <div className="p-4 rounded-2xl">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-sm text-gray-800">
-                    <RainIcon className="w-5 h-5 text-[#2F6FDB]" />
+                    <RainIcon className="w-5 h-5 text-[#1A2A47]" />
                     <span className="font-medium">강우량</span>
                     <span className="text-xs text-gray-500">({rainfall.time} 기준)</span>
                 </div>
-                <span className="text-xl font-bold text-[#2F6FDB]">
+                <span className="text-xl font-bold text-[#1A2A47]">
                     {rainfall.value} mm/h
                 </span>
             </div>
 
             {/* 게이지 */}
             <div className="relative h-4 mt-4" aria-hidden="true">
-                <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#C9DBF7]" />
+                <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#D5DCE8]" />
                 <div
-                    className="absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#2F6FDB]"
+                    className="absolute left-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-[#1A2A47]"
                     style={{ width: `${percent}%` }}
                 />
                 <span
-                    className="absolute top-1/2 w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white border-2 border-[#2F6FDB] shadow"
+                    className="absolute top-1/2 w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white border-2 border-[#1A2A47] shadow"
                     style={{ left: `${percent}%` }}
                 />
             </div>
@@ -182,7 +182,7 @@ function HazardCard({ hazard }) {
 // ── 데이터 출처 카드 ──
 function SourceCard() {
     return (
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-100">
+        <div className="flex items-center gap-3 px-4 rounded-2xl">
             <SafeIcon className="w-5 h-5 shrink-0 text-gray-600" />
             <div className="min-w-0">
                 <p className="text-xs font-medium text-gray-900">공공데이터 기반 추정</p>

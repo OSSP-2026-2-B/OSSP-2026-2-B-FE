@@ -3,3 +3,36 @@
 @theme {
   --color-brand: #FFC93C;
 }
+
+/* 랜딩 페이지: 빗방울이 천천히 떨어지며 사라짐 */
+@keyframes landing-raindrop-fall {
+  0% { transform: translateY(-14px); opacity: 0; }
+  25% { opacity: 0.75; }
+  80% { opacity: 0.75; }
+  100% { transform: translateY(26px); opacity: 0; }
+}
+
+/* 랜딩 페이지: 웅덩이 물결이 살짝 퍼짐 */
+@keyframes landing-ripple {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.12); opacity: 0.5; }
+}
+
+.landing-raindrop {
+  transform-box: fill-box;
+  animation: landing-raindrop-fall 3.6s ease-in-out infinite both;
+}
+
+.landing-ripple {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: landing-ripple 3.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-raindrop,
+  .landing-ripple {
+    animation: none;
+    opacity: 0.75;
+  }
+}

@@ -12,13 +12,13 @@ import { useRouteSearch } from '../../shared/routeSearchContext'
 import LocationCard from './LocationCard'
 
 const recentLocations = [
-  { id: 1, name: '역삼초등학교', address: '서울 강남구 역삼동 833', date: '오후 2:14', Icon: BuildingIcon, color: 'text-[#3676FF]', background: 'bg-[#EAF3FC]' },
-  { id: 2, name: '집', address: '서울 서초구 서초동', date: '오전 8:42', Icon: HomeIcon, color: 'text-[#D58A0B]', background: 'bg-[#FFF4DC]' },
-  { id: 3, name: '신논현역 5번 출구', address: '서울 강남구 봉은사로', date: '어제', Icon: SubwayIcon, color: 'text-[#008562]', background: 'bg-[#E6F4EE]' },
-  { id: 4, name: '카페 테라', address: '서울 강남구 테헤란로 123', date: '어제', Icon: CafeIcon, color: 'text-[#D58A0B]', background: 'bg-[#FFF4DC]' },
-  { id: 5, name: '강남구청', address: '서울 강남구 학동로 426', date: '11월 10일', Icon: BuildingIcon, color: 'text-[#3676FF]', background: 'bg-[#EAF3FC]' },
-  { id: 6, name: '강남역 11번 출구', address: '서울 강남구 강남대로', date: '11월 10일', Icon: SubwayIcon, color: 'text-[#008562]', background: 'bg-[#E6F4EE]' },
-  { id: 7, name: '회사', address: '서울 강남구 테헤란로 152', date: '11월 8일', Icon: BuildingIcon, color: 'text-[#3676FF]', background: 'bg-[#EAF3FC]' },
+  { id: 1, name: '역삼초등학교', address: '서울 강남구 역삼동 833', date: '오후 2:14', Icon: BuildingIcon },
+  { id: 2, name: '집', address: '서울 서초구 서초동', date: '오전 8:42', Icon: HomeIcon },
+  { id: 3, name: '신논현역 5번 출구', address: '서울 강남구 봉은사로', date: '어제', Icon: SubwayIcon },
+  { id: 4, name: '카페 테라', address: '서울 강남구 테헤란로 123', date: '어제', Icon: CafeIcon },
+  { id: 5, name: '강남구청', address: '서울 강남구 학동로 426', date: '11월 10일', Icon: BuildingIcon },
+  { id: 6, name: '강남역 11번 출구', address: '서울 강남구 강남대로', date: '11월 10일', Icon: SubwayIcon },
+  { id: 7, name: '회사', address: '서울 강남구 테헤란로 152', date: '11월 8일', Icon: BuildingIcon },
 ]
 
 export default function SearchPage() {
@@ -37,20 +37,20 @@ export default function SearchPage() {
         <button type="button" onClick={() => navigate(-1)} aria-label="뒤로 가기" className="flex size-6 shrink-0 items-center justify-center text-black">
           <LeftIcon className="size-6" aria-hidden="true" />
         </button>
-        <div className="flex h-12 min-w-0 flex-1 items-center gap-2 rounded-xl border border-gray-200 px-4 text-gray-500">
+        <div className="flex h-12 min-w-0 flex-1 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-gray-500 transition-colors focus-within:border-[#1A2A47] focus-within:text-[#1A2A47]">
           <SearchIcon className="size-5 shrink-0" aria-hidden="true" />
           <input
             type="search"
             aria-label="목적지 검색"
             placeholder="목적지 검색"
-            className="min-w-0 flex-1 bg-transparent text-sm text-black outline-none placeholder:text-gray-500"
+            className="min-w-0 flex-1 bg-transparent text-sm text-[#1A2A47] outline-none placeholder:text-gray-500"
           />
         </div>
       </header>
 
       <section className="mt-10">
         <div className="mb-4 flex items-center justify-between px-4">
-          <h1 className="text-sm font-semibold text-black">최근 30일</h1>
+          <h1 className="text-sm font-bold text-[#1A2A47]">최근 30일</h1>
           <span className="text-xs font-semibold text-gray-500">편집</span>
         </div>
         <ul className="overflow-hidden rounded-2xl border border-gray-200">
