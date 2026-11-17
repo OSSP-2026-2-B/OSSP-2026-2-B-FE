@@ -30,7 +30,7 @@ export default function RouteSearchCard({ page, defaultTo = '' }) {
 
             {/* 출발 */}
             <button type="button" onClick={() => openSearch('from')} className="flex w-full items-center gap-3 pb-3 text-left">
-                <span className="relative z-10 w-3 h-3 shrink-0 rounded-full border-[3px] border-[#FFC93C] bg-white" />
+                <span className="relative z-10 w-3 h-3 shrink-0 rounded-full border-[3px] border-[#1A2A47] bg-white" />
                 <div className="min-w-0 flex-1">
                 <p className="text-xs text-gray-500">출발</p>
                 <p className={`truncate ${currentFrom ? 'font-bold text-gray-900' : 'font-normal text-gray-500'}`}>{currentFrom || '출발지를 입력하세요'}</p>
@@ -39,7 +39,7 @@ export default function RouteSearchCard({ page, defaultTo = '' }) {
 
             {/* 도착 */}
             <button type="button" onClick={() => openSearch('to')} className="flex w-full items-center gap-3 pt-3 text-left">
-                <span className="relative z-10 w-3 h-3 shrink-0 rounded-sm bg-[#C8553D]" />
+                <span className="relative z-10 w-3 h-3 shrink-0 rounded-sm bg-[#1A2A47]" />
                 <div className="min-w-0 flex-1">
                 <p className="text-xs text-gray-500">도착</p>
                 <p className={`truncate ${currentTo ? 'font-bold text-gray-900' : 'font-normal text-gray-500'}`}>{currentTo || '목적지를 입력하세요'}</p>
