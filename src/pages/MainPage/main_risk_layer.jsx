@@ -58,7 +58,7 @@ export default function RiskLayer({ onSelect }) {
                 <Fragment key={segment.id}>
                     {/* 원은 구간 선택을 위한 표시이며 실제 침수 면적을 뜻하지 않습니다. */}
                     <Circle
-                        center={segment.midpoint}
+                        center={segment.center}
                         radius={45}
                         strokeWeight={2}
                         strokeColor={segment.color}
@@ -70,7 +70,7 @@ export default function RiskLayer({ onSelect }) {
                         onClick={() => onSelect(segment)}
                     />
                     {segment.excluded && (
-                        <CustomOverlayMap position={segment.midpoint} clickable zIndex={3}>
+                        <CustomOverlayMap position={segment.center} clickable zIndex={3}>
                             <button
                                 type="button"
                                 aria-label={`${segment.name} 통행 제외 이유 보기`}

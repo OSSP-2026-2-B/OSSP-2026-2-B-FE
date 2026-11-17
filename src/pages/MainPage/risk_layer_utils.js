@@ -11,34 +11,33 @@ export function boundsToBbox(bounds) {
     return [sw.getLng(), sw.getLat(), ne.getLng(), ne.getLat()].join(",");
 }
 
-// 꺾인 선도 실제 구간 길이의 중간에 아이콘을 놓습니다.
-export function getPathMidpoint(path) {
-    const lngScale = Math.cos(path[0].lat * Math.PI / 180);
-    const lengths = path.slice(1).map((point, i) => Math.hypot(
-        (point.lng - path[i].lng) * lngScale,
-        point.lat - path[i].lat,
+// 구간 길이를 기준으로 원과 금지 아이콘의 중심 좌표를 계산합니다.
+function getSegmentCenter(coordinates) {
+    const lngScale = Math.cos(coordinates[0].lat * Math.PI / 180);
+    const lengths = coordinates.slice(1).map((point, i) => Math.hypot(
+        (point.lng - coordinates[i].lng) * lngScale,
+        point.lat - coordinates[i].lat,
     ));
     let remaining = lengths.reduce((sum, length) => sum + length, 0) / 2;
     for (let i = 0; i < lengths.length; i += 1) {
         if (lengths[i] > 0 && remaining <= lengths[i]) {
             const ratio = remaining / lengths[i];
             return {
-                lat: path[i].lat + (path[i + 1].lat - path[i].lat) * ratio,
-                lng: path[i].lng + (path[i + 1].lng - path[i].lng) * ratio,
+                lat: coordinates[i].lat + (coordinates[i + 1].lat - coordinates[i].lat) * ratio,
+                lng: coordinates[i].lng + (coordinates[i + 1].lng - coordinates[i].lng) * ratio,
             };
         }
         remaining -= lengths[i];
     }
-    return path[0];
+    return coordinates[0];
 }
 
 export function featureToSegment(feature) {
     const { segment_id, grade, excluded, reasons } = feature.properties;
-    const path = feature.geometry.coordinates.map(([lng, lat]) => ({ lat, lng }));
+    const coordinates = feature.geometry.coordinates.map(([lng, lat]) => ({ lat, lng }));
     return {
         id: segment_id,
-        path,
-        midpoint: getPathMidpoint(path),
+        center: getSegmentCenter(coordinates),
         color: excluded ? "#D93636" : GRADE_COLORS[grade],
         excluded,
         name: `도로 구간 ${segment_id}`,
