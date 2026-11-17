@@ -159,7 +159,7 @@ function HazardCard({ hazard }) {
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                     <h3 className="text-[15px] font-bold text-gray-900">{hazard.name}</h3>
-                    <span className={`text-xs font-medium ${style.badge}`}>{style.label}</span>
+                    <span className={`text-xs font-medium ${style.badge}`}>{hazard.label ?? style.label}</span>
                 </div>
                 <p className="mt-1 text-xs leading-5 text-gray-600">{hazard.description}</p>
                 {hazard.tags?.length > 0 && (

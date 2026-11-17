@@ -2,11 +2,11 @@ import { useNavigate } from "react-router";
 import { SearchIcon, UpsideDownIcon } from "../../assets";
 import { useRouteSearch } from "../routeSearchContext";
 
-export default function RouteSearchCard({ page, defaultTo = '' }) {
+export default function RouteSearchCard({ page, defaultTo = null }) {
     const navigate = useNavigate();
     const { from, to, setFrom, setTo, setSearchTarget } = useRouteSearch();
     const currentFrom = from;
-    const currentTo = to || defaultTo;
+    const currentTo = to ?? defaultTo;
     const openSearch = (field) => {
         setSearchTarget({ page, field });
         if (defaultTo && !to) setTo(defaultTo);
@@ -33,7 +33,7 @@ export default function RouteSearchCard({ page, defaultTo = '' }) {
                 <span className="relative z-10 w-3 h-3 shrink-0 rounded-full border-[3px] border-[#1A2A47] bg-white" />
                 <div className="min-w-0 flex-1">
                 <p className="text-xs text-gray-500">출발</p>
-                <p className={`truncate ${currentFrom ? 'font-bold text-gray-900' : 'font-normal text-gray-500'}`}>{currentFrom || '출발지를 입력하세요'}</p>
+                <p className={`truncate ${currentFrom ? 'font-bold text-gray-900' : 'font-normal text-gray-500'}`}>{currentFrom?.name || '출발지를 입력하세요'}</p>
                 </div>
             </button>
 
@@ -42,7 +42,7 @@ export default function RouteSearchCard({ page, defaultTo = '' }) {
                 <span className="relative z-10 w-3 h-3 shrink-0 rounded-sm bg-[#1A2A47]" />
                 <div className="min-w-0 flex-1">
                 <p className="text-xs text-gray-500">도착</p>
-                <p className={`truncate ${currentTo ? 'font-bold text-gray-900' : 'font-normal text-gray-500'}`}>{currentTo || '목적지를 입력하세요'}</p>
+                <p className={`truncate ${currentTo ? 'font-bold text-gray-900' : 'font-normal text-gray-500'}`}>{currentTo?.name || '목적지를 입력하세요'}</p>
                 </div>
             </button>
             </div>
