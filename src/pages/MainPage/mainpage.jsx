@@ -1,14 +1,11 @@
 import Header from "./main_header";
-import { Map, Circle, useKakaoLoader } from "react-kakao-maps-sdk";
+import { Map, useKakaoLoader } from "react-kakao-maps-sdk";
 import RouteSearchCard from "../../shared/ui/RouteSearchCard";
 import RouteBottomSheet from "./main_bottom_sheet";
 import RiskReasonSheet from "./main_risk_sheet";
-import { HAZARDS, RAINFALL } from "./mock_data";
+import RiskLayer from "./main_risk_layer";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router";
-
-// 지도에 원으로 표시할 위험 구간 (area 좌표가 있는 것만)
-const MAP_HAZARDS = Object.values(HAZARDS).filter((h) => h.area);
 
 export default function MainPage() {
     const navigate = useNavigate();
@@ -30,12 +27,13 @@ export default function MainPage() {
         setRiskOpen(true);
     };
 
-    // 지도 위 빨간 원 클릭 → 그 구간 하나만
+    // 지도 원 또는 통행 제외 아이콘 클릭 → API의 해당 구간
     const openHazardRisk = (hazard) => {
         setRiskContent({
             title: "왜 이 구간을 피하나요?",
-            rainfall: RAINFALL,
+            rainfall: null,
             hazards: [hazard],
+            sourceDescription: "강우와 구간별 위험·통제 정보를 반영한 결과입니다.",
         });
         setRiskOpen(true);
     };
@@ -56,25 +54,13 @@ export default function MainPage() {
                         level={4}
                         className="absolute inset-0"
                     >
-                        {MAP_HAZARDS.map((hazard) => (
-                            <Circle
-                                key={hazard.id}
-                                center={hazard.area.center}
-                                radius={hazard.area.radius}
-                                strokeWeight={2}
-                                strokeColor="#C8553D"
-                                strokeOpacity={0.9}
-                                strokeStyle="dash"
-                                fillColor="#E8705A"
-                                fillOpacity={0.3}
-                                onClick={() => openHazardRisk(hazard)}
-                            />
-                        ))}
+                        <RiskLayer onSelect={openHazardRisk} />
                     </Map>
                     <div className="absolute top-4 left-4 right-4 z-10">
                         <RouteSearchCard page="/main" defaultTo="역삼초등학교" />
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 z-20">
+                    {/* 접힌 시트의 원래 자리에서는 지도 터치를 통과시킵니다. */}
+                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-20">
                         <RouteBottomSheet onShowRisk={openRouteRisk} />
                     </div>
                     <RiskReasonSheet
