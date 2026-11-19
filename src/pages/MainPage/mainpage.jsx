@@ -1,14 +1,29 @@
 import Header from "./main_header";
 import { Map, Circle, useKakaoLoader } from "react-kakao-maps-sdk";
+import { EndPin, RouteLine, StartPin } from "../../features/route/components/MapRouteLayer";
 import RouteSearchCard from "../../shared/ui/RouteSearchCard";
 import RouteBottomSheet from "./main_bottom_sheet";
 import RiskReasonSheet from "./main_risk_sheet";
-import { HAZARDS, RAINFALL } from "./mock_data";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { useRouteSearch } from "../../shared/routeSearchContext";
+import { PLACES } from "../../shared/data/places";
+import useRoutes from "../../features/route/hooks/useRoutes";
+import { getApiErrorMessage } from "../../shared/api/errors";
+import {
+    GRADE_STYLE,
+    RECOMMENDED_MODE,
+    buildRouteCards,
+    formatRain,
+    formatUpdated,
+    groupHazards,
+    lineToPath,
+    toLatLng,
+    toSheetHazard,
+} from "../../features/route/utils/formatRoute";
 
-// 지도에 원으로 표시할 위험 구간 (area 좌표가 있는 것만)
-const MAP_HAZARDS = Object.values(HAZARDS).filter((h) => h.area);
+const DEFAULT_DESTINATION = PLACES.yeoksamSchool;
+const GANGNAM_STATION = { lat: 37.4979, lng: 127.0276 };
 
 export default function MainPage() {
     const navigate = useNavigate();
@@ -16,31 +31,88 @@ export default function MainPage() {
         appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
     });
 
+    const { from, to } = useRouteSearch();
+    const destination = to ?? DEFAULT_DESTINATION;
+    const route = useRoutes(from, destination);
+
+    const routeCards = useMemo(() => buildRouteCards(route.data?.routes), [route.data]);
+    const fallback = route.data?.fallback ?? null;
+    const rainfall = formatRain(route.data?.rain);
+
+    // 선택한 경로 (없으면 추천 → 첫 번째)
+    const [selectedMode, setSelectedMode] = useState(RECOMMENDED_MODE);
+    const selected =
+        routeCards.find((r) => r.mode === selectedMode) ??
+        routeCards.find((r) => r.recommended) ??
+        routeCards[0] ??
+        null;
+
+    // 지도에 표시할 위험 구간: 모든 경로의 구간 (중복 제거 후 묶음)
+    const mapHazards = useMemo(() => {
+        const seen = new Set();
+        const groups = [];
+        for (const card of routeCards) {
+            for (const group of groupHazards(card.hazards)) {
+                if (group.segmentIds.some((id) => seen.has(id))) continue;
+                group.segmentIds.forEach((id) => seen.add(id));
+                groups.push(group);
+            }
+        }
+        return groups;
+    }, [routeCards]);
+
+    const shelterPath = useMemo(() => lineToPath(fallback?.geometry), [fallback]);
+
     // 위험 근거 시트 (내용은 닫힐 때도 유지해서 내려가는 애니메이션 동안 비지 않게)
     const [riskOpen, setRiskOpen] = useState(false);
     const [riskContent, setRiskContent] = useState({ title: "", rainfall: null, hazards: [] });
 
-    // 바텀시트 "구간별 위험 근거 보기" → 경로의 모든 위험 구간
-    const openRouteRisk = (route) => {
-        setRiskContent({
-            title: route.id === "safe" ? "왜 이 길을 피하나요?" : "이 경로의 위험 구간",
-            rainfall: route.rainfall,
-            hazards: route.hazards,
-        });
+    // 바텀시트 "구간별 위험 근거 보기"
+    // - 빠른 경로: 그 경로가 지나는 위험 구간
+    // - 안전 경로: 빠른 경로에서 피한 구간 + 그래도 지나는 구간
+    const openRouteRisk = (card) => {
+        const own = groupHazards(card.hazards).map((g) => toSheetHazard(g));
+        if (!card.safe) {
+            setRiskContent({ title: "이 경로의 위험 구간", rainfall, hazards: own });
+        } else {
+            const ownIds = new Set(card.hazards.map((h) => h.segment_id));
+            const shortest = routeCards.find((r) => r.mode === "shortest");
+            const avoided = groupHazards(
+                (shortest?.hazards ?? []).filter((h) => !ownIds.has(h.segment_id)),
+            ).map((g) => toSheetHazard(g, { avoided: true }));
+            setRiskContent({ title: "왜 이 길을 피하나요?", rainfall, hazards: [...avoided, ...own] });
+        }
         setRiskOpen(true);
     };
 
-    // 지도 위 빨간 원 클릭 → 그 구간 하나만
-    const openHazardRisk = (hazard) => {
+    // 지도 위 원 클릭 → 그 구간 하나만
+    const openHazardRisk = (group) => {
         setRiskContent({
             title: "왜 이 구간을 피하나요?",
-            rainfall: RAINFALL,
-            hazards: [hazard],
+            rainfall,
+            hazards: [toSheetHazard(group)],
         });
         setRiskOpen(true);
     };
 
     const closeRiskSheet = useCallback(() => setRiskOpen(false), []);
+
+    // 경로가 바뀌면 지도 범위를 경로에 맞춤
+    const [map, setMap] = useState(null);
+    const boundsPoints = useMemo(() => {
+        const points = [...routeCards.flatMap((r) => r.path), ...shelterPath];
+        if (points.length === 0 && from && destination) return [from, destination];
+        return points;
+    }, [routeCards, shelterPath, from, destination]);
+
+    useEffect(() => {
+        const kakao = window.kakao;
+        if (!map || !kakao || boundsPoints.length === 0) return;
+        const bounds = new kakao.maps.LatLngBounds();
+        boundsPoints.forEach((p) => bounds.extend(new kakao.maps.LatLng(p.lat, p.lng)));
+        // 위: 검색 카드, 아래: 바텀시트 만큼 여백
+        map.setBounds(bounds, 170, 30, 400, 30);
+    }, [map, boundsPoints]);
 
     return (
         <div className="flex flex-col h-dvh max-w-md mx-auto">
@@ -52,30 +124,69 @@ export default function MainPage() {
                 {!loading && !error && (
                     <>
                     <Map
-                        center = {{lat: 37.4979, lng: 127.0276}}
+                        center={GANGNAM_STATION}
                         level={4}
                         className="absolute inset-0"
+                        onCreate={setMap}
                     >
-                        {MAP_HAZARDS.map((hazard) => (
-                            <Circle
-                                key={hazard.id}
-                                center={hazard.area.center}
-                                radius={hazard.area.radius}
-                                strokeWeight={2}
-                                strokeColor="#C8553D"
-                                strokeOpacity={0.9}
-                                strokeStyle="dash"
-                                fillColor="#E8705A"
-                                fillOpacity={0.3}
-                                onClick={() => openHazardRisk(hazard)}
-                            />
-                        ))}
+                        {/* 위험 구간 영역 (경로 선 아래에 옅게) */}
+                        {mapHazards.map((group) => {
+                            const style = GRADE_STYLE[group.grade] ?? GRADE_STYLE["위험"];
+                            return (
+                                <Circle
+                                    key={group.id}
+                                    center={group.center}
+                                    radius={Math.max(group.count * 12.5, 22)}
+                                    strokeWeight={1.5}
+                                    strokeColor={style.stroke}
+                                    strokeOpacity={0.6}
+                                    fillColor={style.fill}
+                                    fillOpacity={0.18}
+                                    zIndex={0}
+                                    onClick={() => openHazardRisk(group)}
+                                />
+                            );
+                        })}
+
+                        {/* 선택하지 않은 경로 먼저 (아래), 선택한 경로는 위에 */}
+                        {routeCards
+                            .filter((r) => r.mode !== selected?.mode)
+                            .map((r) => (
+                                <RouteLine key={r.mode} path={r.path} onClick={() => setSelectedMode(r.mode)} />
+                            ))}
+                        {selected && (
+                            <RouteLine key={`selected-${selected.mode}`} path={selected.path} hazards={selected.hazards} selected />
+                        )}
+                        <RouteLine path={shelterPath} selected dashed />
+
+                        {from && <StartPin position={{ lat: from.lat, lng: from.lng }} />}
+                        {fallback ? (
+                            <EndPin position={toLatLng(fallback.location)} label={fallback.name} tone="shelter" />
+                        ) : (
+                            destination && <EndPin position={{ lat: destination.lat, lng: destination.lng }} />
+                        )}
                     </Map>
                     <div className="absolute top-4 left-4 right-4 z-10">
-                        <RouteSearchCard page="/main" defaultTo="역삼초등학교" />
+                        <RouteSearchCard page="/main" defaultTo={DEFAULT_DESTINATION} />
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 z-20">
-                        <RouteBottomSheet onShowRisk={openRouteRisk} />
+                        <RouteBottomSheet
+                            routes={routeCards}
+                            selected={selected}
+                            onSelect={setSelectedMode}
+                            loading={route.loading}
+                            error={
+                                !from
+                                    ? "출발지를 선택해 주세요."
+                                    : route.error
+                                      ? getApiErrorMessage(route.error)
+                                      : null
+                            }
+                            onRetry={from ? route.retry : undefined}
+                            fallback={fallback}
+                            updatedLabel={formatUpdated(route.data?.rain)}
+                            onShowRisk={openRouteRisk}
+                        />
                     </div>
                     <RiskReasonSheet
                         open={riskOpen}
