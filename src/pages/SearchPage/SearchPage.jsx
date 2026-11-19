@@ -10,15 +10,16 @@ import {
 import { useNavigate } from 'react-router'
 import { useRouteSearch } from '../../shared/routeSearchContext'
 import LocationCard from './LocationCard'
+import { PLACES } from '../../shared/data/places'
 
 const recentLocations = [
-  { id: 1, name: '역삼초등학교', address: '서울 강남구 역삼동 833', date: '오후 2:14', Icon: BuildingIcon },
-  { id: 2, name: '집', address: '서울 서초구 서초동', date: '오전 8:42', Icon: HomeIcon },
-  { id: 3, name: '신논현역 5번 출구', address: '서울 강남구 봉은사로', date: '어제', Icon: SubwayIcon },
-  { id: 4, name: '카페 테라', address: '서울 강남구 테헤란로 123', date: '어제', Icon: CafeIcon },
-  { id: 5, name: '강남구청', address: '서울 강남구 학동로 426', date: '11월 10일', Icon: BuildingIcon },
-  { id: 6, name: '강남역 11번 출구', address: '서울 강남구 강남대로', date: '11월 10일', Icon: SubwayIcon },
-  { id: 7, name: '회사', address: '서울 강남구 테헤란로 152', date: '11월 8일', Icon: BuildingIcon },
+  { ...PLACES.yeoksamSchool, date: '오후 2:14', Icon: BuildingIcon },
+  { ...PLACES.home, date: '오전 8:42', Icon: HomeIcon },
+  { ...PLACES.sinnonhyeonExit5, date: '어제', Icon: SubwayIcon },
+  { ...PLACES.cafeTera, date: '어제', Icon: CafeIcon },
+  { ...PLACES.gangnamGu, date: '11월 10일', Icon: BuildingIcon },
+  { ...PLACES.gangnamExit11, date: '11월 10일', Icon: SubwayIcon },
+  { ...PLACES.office, date: '11월 8일', Icon: BuildingIcon },
 ]
 
 export default function SearchPage() {
@@ -26,8 +27,10 @@ export default function SearchPage() {
   const { searchTarget, setFrom, setTo } = useRouteSearch()
 
   const selectLocation = (location) => {
-    if (searchTarget.field === 'from') setFrom(location.name)
-    else setTo(location.name)
+    const { id, name, address, lat, lng } = location
+    const place = { id, name, address, lat, lng }
+    if (searchTarget.field === 'from') setFrom(place)
+    else setTo(place)
     navigate(searchTarget.page)
   }
 

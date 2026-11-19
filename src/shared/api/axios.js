@@ -11,6 +11,7 @@ const api = axios.create({
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        // 화면 이동 등으로 취소한 요청은 오류 로그 없이 호출부로 전달합니다.
         if (axios.isCancel(error)) return Promise.reject(error)
 
         if (error.response) {
