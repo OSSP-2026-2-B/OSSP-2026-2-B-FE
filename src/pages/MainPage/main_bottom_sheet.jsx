@@ -7,8 +7,7 @@ import {
     NavigationIcon,
 } from "../../assets/index";
 import PrimaryButton from "../../shared/ui/PrimaryButton";
-
-import { ROUTES } from "./mock_data";
+import { GRADE_STYLE } from "../../features/route/utils/formatRoute";
 
     // 시트 크기 (px)
     const SHEET_HEIGHT = 388;
@@ -16,16 +15,37 @@ import { ROUTES } from "./mock_data";
     const MAX_OFFSET = SHEET_HEIGHT - PEEK_HEIGHT; // 최대로 내려가는 거리
     const DRAG_THRESHOLD = 60; // 이만큼 이상 끌어야 열림/닫힘이 바뀜
 
-export default function RouteBottomSheet({ onShowRisk }) {
-    const [selectedId, setSelectedId] = useState("safe");
+/**
+ * 경로 비교 바텀시트
+ * @param {object[]} routes       buildRouteCards 결과
+ * @param {object|null} selected  선택된 경로 카드
+ * @param {function} onSelect     (mode) => void
+ * @param {boolean} loading
+ * @param {string|null} error     오류 문구
+ * @param {function} onRetry
+ * @param {object|null} fallback  경로가 없을 때 임시주거시설
+ * @param {string} updatedLabel   "n분 전 갱신"
+ * @param {function} onShowRisk   (route) => void
+ */
+export default function RouteBottomSheet({
+    routes = [],
+    selected = null,
+    onSelect,
+    loading = false,
+    error = null,
+    onRetry,
+    fallback = null,
+    updatedLabel = "",
+    onShowRisk,
+}) {
     const [collapsed, setCollapsed] = useState(false);
     const [dragOffset, setDragOffset] = useState(null); // 드래그 중일 때만 숫자, 아니면 null
 
     const startY = useRef(0); // 손가락을 처음 댄 위치
     const startOffset = useRef(0); // 드래그 시작 시점의 시트 위치
 
-    const selected = ROUTES.find((r) => r.id === selectedId);
     const isDragging = dragOffset !== null;
+    const ready = !loading && !error;
 
     // 지금 시트가 얼마나 내려가 있는지 (0 = 다 펼침, MAX_OFFSET = 다 접음)
     const baseOffset = collapsed ? MAX_OFFSET : 0;
@@ -92,48 +112,78 @@ export default function RouteBottomSheet({ onShowRisk }) {
             <div className="flex items-end justify-between mb-2">
             <div>
                 <p className="text-xs font-medium text-[#1A2A47]">추천 경로 비교</p>
-                <h2 className="text-xl font-bold text-gray-900">조금 돌아도, 더 안전하게</h2>
+                <h2 className="text-xl font-bold text-gray-900">
+                    {ready && fallback ? "가까운 임시주거시설로 안내해요" : "조금 돌아도, 더 안전하게"}
+                </h2>
             </div>
-            <span className="text-xs text-gray-400">2분 전 갱신</span>
-            </div>
-
-            {/* 경로 카드 목록 */}
-            <div className="flex flex-col gap-2">
-            {ROUTES.map((route) => (
-                <RouteCard
-                key={route.id}
-                route={route}
-                selected={route.id === selectedId}
-                onSelect={() => setSelectedId(route.id)}
-                />
-            ))}
+            {ready && updatedLabel && <span className="text-xs text-gray-400">{updatedLabel}</span>}
             </div>
 
-            {/* 근거 보기 링크 */}
-            <button
-            type="button"
-            onClick={() => onShowRisk?.(selected)}
-            className="flex items-center justify-center gap-1 w-full py-2 text-sm text-gray-600"
-            >
-            구간별 위험 근거 보기
-            <RightIcon className="w-[18px] h-[18px]" />
-            </button>
+            {loading && (
+                <p className="py-10 text-center text-sm text-gray-500">경로를 계산하고 있어요...</p>
+            )}
+
+            {!loading && error && (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                    <p className="text-sm text-[#E24739]">{error}</p>
+                    {onRetry && (
+                        <button
+                            type="button"
+                            onClick={onRetry}
+                            className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 active:bg-gray-50"
+                        >
+                            다시 시도
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {ready && fallback && <ShelterCard shelter={fallback} />}
+
+            {ready && routes.length > 0 && (
+                <>
+                {/* 경로 카드 목록 */}
+                <div className="flex flex-col gap-2">
+                {routes.map((route) => (
+                    <RouteCard
+                    key={route.mode}
+                    route={route}
+                    selected={route.mode === selected?.mode}
+                    onSelect={() => onSelect?.(route.mode)}
+                    />
+                ))}
+                </div>
+
+                {/* 근거 보기 링크 */}
+                <button
+                type="button"
+                onClick={() => selected && onShowRisk?.(selected)}
+                className="flex items-center justify-center gap-1 w-full py-2 text-sm text-gray-600"
+                >
+                구간별 위험 근거 보기
+                <RightIcon className="w-[18px] h-[18px]" />
+                </button>
+                </>
+            )}
         </div>
 
         {/* ── 출발 버튼 ── */}
-        <PrimaryButton
-            icon={NavigationIcon}
-            className="shrink-0 active:scale-[0.98] transition-transform"
-        >
-            {selected.name}로 출발
-        </PrimaryButton>
+        {ready && (selected || fallback?.reachable) && (
+            <PrimaryButton
+                icon={NavigationIcon}
+                className="shrink-0 active:scale-[0.98] transition-transform"
+            >
+                {selected ? `${selected.name}로 출발` : "임시주거시설로 출발"}
+            </PrimaryButton>
+        )}
         </section>
     );
 }
 
 // ── 경로 카드 하나 ──
 function RouteCard({ route, selected, onSelect }) {
-    const isSafe = route.id === "safe";
+    const isSafe = route.safe;
+    const gradeStyle = GRADE_STYLE[route.maxGrade] ?? GRADE_STYLE["주의"];
 
     return (
         <button
@@ -170,32 +220,68 @@ function RouteCard({ route, selected, onSelect }) {
 
             <div className="flex items-baseline gap-2 mt-0.5">
             <span className="text-[22px] leading-7 font-bold text-gray-900">{route.time}분</span>
-            <span className="text-xs text-gray-500">{route.distance}km</span>
+            <span className="text-xs text-gray-500">{route.distanceKm}km</span>
             </div>
 
             {isSafe ? (
-            <p className="flex items-center gap-1.5 mt-0.5 text-xs text-gray-600">
-                <span className="px-1.5 py-0.5 rounded bg-gray-100">+{route.extraTime}분</span>
-                위험 구간 {route.totalRisk}개 중
-                <span className="font-medium text-[#1A2A47]">{route.avoided}개 회피</span>
+            <p className="flex flex-wrap items-center gap-1.5 mt-0.5 text-xs text-gray-600">
+                <span className="px-1.5 py-0.5 rounded bg-gray-100">+{route.detourMin}분</span>
+                {route.shortestRiskCount > 0 ? (
+                    <>
+                    위험 구간 {route.shortestRiskCount}개 중
+                    <span className="font-medium text-[#1A2A47]">{route.avoided}개 회피</span>
+                    </>
+                ) : (
+                    <span>위험 구간 {route.riskCount}개</span>
+                )}
             </p>
-            ) : (
+            ) : route.riskCount > 0 ? (
             <p className="flex items-center gap-1.5 mt-0.5 text-xs text-[#E24739]">
                 <DangerIcon className="w-[18px] h-[18px]" />
-                위험 구간 {route.totalRisk}개 통과
+                위험 구간 {route.riskCount}개 · {route.dangerLength}m 통과
             </p>
+            ) : (
+            <p className="mt-0.5 text-xs text-gray-600">지나는 위험 구간이 없어요</p>
             )}
         </div>
 
-        {/* 오른쪽 위험도 박스 */}
+        {/* 오른쪽 위험도 박스 (경로의 최고 등급) */}
         <div
-            className={`flex flex-col items-center justify-center w-14 h-16 shrink-0 rounded-xl ${
-            isSafe ? "bg-[#E8ECF4] text-[#1A2A47]" : "bg-[#FFF0ED] text-[#E24739]"
-            }`}
+            className={`flex flex-col items-center justify-center w-14 h-16 shrink-0 rounded-xl ${gradeStyle.box}`}
         >
             <span className="text-xs">위험도</span>
-            <span className="text-xl font-bold">{route.risk}</span>
+            <span className={`font-bold ${route.maxGrade?.length > 2 ? "text-base" : "text-xl"}`}>
+                {route.maxGrade}
+            </span>
         </div>
         </button>
+    );
+}
+
+// ── 경로가 없을 때 임시주거시설 카드 ──
+function ShelterCard({ shelter }) {
+    const km = (shelter.distance_m / 1000).toFixed(1);
+
+    return (
+        <div className="flex flex-col gap-2 p-4 rounded-2xl border border-gray-200">
+            <p className="flex items-start gap-1.5 text-xs text-[#E24739]">
+                <DangerIcon className="w-[18px] h-[18px] shrink-0" />
+                {shelter.reason}
+            </p>
+            <div>
+                <h3 className="text-base font-bold text-gray-900">{shelter.name}</h3>
+                <p className="mt-0.5 text-xs text-gray-500">{shelter.address}</p>
+            </div>
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-700">
+                {shelter.reachable ? (
+                    <span>
+                        도보 <b>{shelter.duration_min}분</b> · {km}km
+                    </span>
+                ) : (
+                    <span>직선거리 {km}km · 걸어갈 수 있는 경로가 없어요</span>
+                )}
+                {shelter.capacity != null && <span>수용 {shelter.capacity}명</span>}
+            </div>
+        </div>
     );
 }
