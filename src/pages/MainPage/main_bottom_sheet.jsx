@@ -84,7 +84,7 @@ export default function RouteBottomSheet({
     return (
         <section
         style={{ transform: `translateY(${offset}px)` }}
-        className={`flex flex-col w-full max-w-[403px] h-[388px] mx-auto px-4 pb-3 bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.08)] ${
+        className={`pointer-events-auto flex flex-col w-full max-w-[403px] h-[388px] mx-auto px-4 pb-3 bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.08)] ${
             isDragging ? "" : "transition-transform duration-300 ease-out"
         }`}
         >

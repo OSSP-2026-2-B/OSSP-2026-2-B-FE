@@ -30,14 +30,14 @@ const RAIN_MAX = 100;
 /**
  * 위험 근거 바텀시트 모달
  * - 경로 전체: 그 경로가 피하는(또는 지나는) 모든 위험 구간
- * - 지도 원 클릭: 그 구간 하나만
+ * - 지도 원·통행 제외 아이콘 클릭: 그 구간 하나만
  * @param {boolean} open        열림 여부
  * @param {function} onClose    닫기 콜백
  * @param {string} title        시트 제목
  * @param {object} rainfall     { value, time }
  * @param {object[]} hazards    표시할 위험 구간 목록
  */
-export default function RiskReasonSheet({ open, onClose, title, rainfall, hazards = [] }) {
+export default function RiskReasonSheet({ open, onClose, title, rainfall, hazards = [], sourceDescription }) {
     // ESC 키로 닫기
     useEffect(() => {
         if (!open) return;
@@ -95,7 +95,7 @@ export default function RiskReasonSheet({ open, onClose, title, rainfall, hazard
                         hazards.map((hazard) => <HazardCard key={hazard.id} hazard={hazard} />)
                     )}
 
-                    <SourceCard />
+                    <SourceCard description={sourceDescription} />
                 </div>
             </section>
         </div>
@@ -180,14 +180,14 @@ function HazardCard({ hazard }) {
 }
 
 // ── 데이터 출처 카드 ──
-function SourceCard() {
+function SourceCard({ description = "기상청 강우 · 침수흔적도 · 지형 고도 · 하천 거리" }) {
     return (
         <div className="flex items-center gap-3 px-4 rounded-2xl">
             <SafeIcon className="w-5 h-5 shrink-0 text-gray-600" />
             <div className="min-w-0">
                 <p className="text-xs font-medium text-gray-900">공공데이터 기반 추정</p>
                 <p className="mt-0.5 text-[11px] text-gray-500">
-                    기상청 강우 · 침수흔적도 · 지형 고도 · 하천 거리
+                    {description}
                 </p>
             </div>
         </div>

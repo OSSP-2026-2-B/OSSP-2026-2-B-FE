@@ -1,9 +1,10 @@
 import Header from "./main_header";
-import { Map, Circle, useKakaoLoader } from "react-kakao-maps-sdk";
+import { Map, useKakaoLoader } from "react-kakao-maps-sdk";
 import { EndPin, RouteLine, StartPin } from "../../features/route/components/MapRouteLayer";
 import RouteSearchCard from "../../shared/ui/RouteSearchCard";
 import RouteBottomSheet from "./main_bottom_sheet";
 import RiskReasonSheet from "./main_risk_sheet";
+import RiskLayer from "./main_risk_layer";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useRouteSearch } from "../../shared/routeSearchContext";
@@ -11,7 +12,6 @@ import { PLACES } from "../../shared/data/places";
 import useRoutes from "../../features/route/hooks/useRoutes";
 import { getApiErrorMessage } from "../../shared/api/errors";
 import {
-    GRADE_STYLE,
     RECOMMENDED_MODE,
     buildRouteCards,
     formatRain,
@@ -47,20 +47,6 @@ export default function MainPage() {
         routeCards[0] ??
         null;
 
-    // 지도에 표시할 위험 구간: 모든 경로의 구간 (중복 제거 후 묶음)
-    const mapHazards = useMemo(() => {
-        const seen = new Set();
-        const groups = [];
-        for (const card of routeCards) {
-            for (const group of groupHazards(card.hazards)) {
-                if (group.segmentIds.some((id) => seen.has(id))) continue;
-                group.segmentIds.forEach((id) => seen.add(id));
-                groups.push(group);
-            }
-        }
-        return groups;
-    }, [routeCards]);
-
     const shelterPath = useMemo(() => lineToPath(fallback?.geometry), [fallback]);
 
     // 위험 근거 시트 (내용은 닫힐 때도 유지해서 내려가는 애니메이션 동안 비지 않게)
@@ -85,12 +71,13 @@ export default function MainPage() {
         setRiskOpen(true);
     };
 
-    // 지도 위 원 클릭 → 그 구간 하나만
-    const openHazardRisk = (group) => {
+    // 지도 원 또는 통행 제외 아이콘 클릭 → API의 해당 구간
+    const openHazardRisk = (hazard) => {
         setRiskContent({
             title: "왜 이 구간을 피하나요?",
-            rainfall,
-            hazards: [toSheetHazard(group)],
+            rainfall: null,
+            hazards: [hazard],
+            sourceDescription: "강우와 구간별 위험·통제 정보를 반영한 결과입니다.",
         });
         setRiskOpen(true);
     };
@@ -129,24 +116,7 @@ export default function MainPage() {
                         className="absolute inset-0"
                         onCreate={setMap}
                     >
-                        {/* 위험 구간 영역 (경로 선 아래에 옅게) */}
-                        {mapHazards.map((group) => {
-                            const style = GRADE_STYLE[group.grade] ?? GRADE_STYLE["위험"];
-                            return (
-                                <Circle
-                                    key={group.id}
-                                    center={group.center}
-                                    radius={Math.max(group.count * 12.5, 22)}
-                                    strokeWeight={1.5}
-                                    strokeColor={style.stroke}
-                                    strokeOpacity={0.6}
-                                    fillColor={style.fill}
-                                    fillOpacity={0.18}
-                                    zIndex={0}
-                                    onClick={() => openHazardRisk(group)}
-                                />
-                            );
-                        })}
+                        <RiskLayer onSelect={openHazardRisk} />
 
                         {/* 선택하지 않은 경로 먼저 (아래), 선택한 경로는 위에 */}
                         {routeCards
@@ -169,7 +139,8 @@ export default function MainPage() {
                     <div className="absolute top-4 left-4 right-4 z-10">
                         <RouteSearchCard page="/main" defaultTo={DEFAULT_DESTINATION} />
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 z-20">
+                    {/* 접힌 시트의 원래 자리에서는 지도 터치를 통과시킵니다. */}
+                    <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-20">
                         <RouteBottomSheet
                             routes={routeCards}
                             selected={selected}
