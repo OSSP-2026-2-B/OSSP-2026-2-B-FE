@@ -11,6 +11,8 @@ const api = axios.create({
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        if (axios.isCancel(error)) return Promise.reject(error)
+
         if (error.response) {
         // 서버가 4xx/5xx로 응답한 경우
         console.error(`[API Error] ${error.response.status}`, error.response.data)
