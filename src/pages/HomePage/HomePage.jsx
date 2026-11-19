@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import {
-  AppIcon, BuildingIcon, DangerIcon, HomeIcon, NavigationIcon,
+  AppIcon, BuildingIcon, HomeIcon, NavigationIcon,
   SubwayIcon,
 } from '../../assets';
 import PrimaryButton from '../../shared/ui/PrimaryButton';
 import RouteSearchCard from '../../shared/ui/RouteSearchCard';
 import { useRouteSearch } from '../../shared/routeSearchContext';
-import { RAINFALL } from '../MainPage/mock_data';
+import RainObservationCard from './RainObservationCard';
 import { PLACES } from '../../shared/data/places';
 import { wakeServer } from '../../shared/api/health';
 
@@ -43,20 +43,7 @@ export default function HomePage() {
       {/* 현재 강우 상황 */}
       <section className="mt-12" aria-labelledby="rain-heading">
         <h2 id="rain-heading" className="flex items-center gap-2 text-lg font-bold">현재 강우 상황</h2>
-        <div className="mt-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_12px_32px_#17221D0D]">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="mt-2 text-4xl font-bold text-[#1A2A47]">{RAINFALL.value}<span className="ml-1 text-xl">mm/h</span></p>
-            </div>
-            <div className="text-right">
-              <div className="rounded-xl bg-[#FFF0ED] px-3 py-2 font-bold text-sm text-[#E24739] flex gap-1.5 items-center">
-                <DangerIcon className="size-4.5"/>
-                <p>집중 호우</p>
-              </div>
-              <p className="mt-2 text-xs text-[#6F7B75]">13:20 기준 · 기상청</p>
-            </div>
-          </div>
-        </div>
+        <RainObservationCard />
       </section>
 
       {/* 추천 목적지 */}

@@ -11,9 +11,10 @@ const api = axios.create({
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (axios.isCancel(error)) {
-        // 일부러 취소한 요청 (화면 이동, 출발·도착 변경, StrictMode 재실행 등) → 오류 아님
-        } else if (error.response) {
+        // 화면 이동 등으로 취소한 요청은 오류 로그 없이 호출부로 전달합니다.
+        if (axios.isCancel(error)) return Promise.reject(error)
+
+        if (error.response) {
         // 서버가 4xx/5xx로 응답한 경우
         console.error(`[API Error] ${error.response.status}`, error.response.data)
         } else if (error.request) {
