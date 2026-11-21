@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { postRoute } from '../api/routeApi'
 import { isCanceled } from '../../../shared/api/errors'
+import { getScenarioRainMm } from '../../../shared/scenario'
 
 const MODES = ['shortest', 'balanced']
 
@@ -20,7 +21,12 @@ export default function useRoutes(start, end) {
     if (!key) return
     const controller = new AbortController()
     postRoute(
-      { start: { lat: startLat, lng: startLng }, end: { lat: endLat, lng: endLng }, modes: MODES },
+      {
+        start: { lat: startLat, lng: startLng },
+        end: { lat: endLat, lng: endLng },
+        modes: MODES,
+        rainMm: getScenarioRainMm() ?? undefined,
+      },
       controller.signal,
     )
       .then((data) => setResult({ key, data, error: null }))

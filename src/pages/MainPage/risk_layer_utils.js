@@ -37,6 +37,7 @@ export function featureToSegment(feature) {
     const coordinates = feature.geometry.coordinates.map(([lng, lat]) => ({ lat, lng }));
     return {
         id: segment_id,
+        path: coordinates,
         center: getSegmentCenter(coordinates),
         color: excluded ? "#D93636" : GRADE_COLORS[grade],
         excluded,
