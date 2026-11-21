@@ -1,5 +1,6 @@
 import Header from "./main_header";
-import { Map, useKakaoLoader } from "react-kakao-maps-sdk";
+import { Map } from "react-kakao-maps-sdk";
+import { GANGNAM_STATION, useKakaoMapLoader } from "../../shared/kakao";
 import { EndPin, RouteLine, StartPin } from "../../features/route/components/MapRouteLayer";
 import RouteSearchCard from "../../shared/ui/RouteSearchCard";
 import RouteBottomSheet from "./main_bottom_sheet";
@@ -23,13 +24,10 @@ import {
 } from "../../features/route/utils/formatRoute";
 
 const DEFAULT_DESTINATION = PLACES.yeoksamSchool;
-const GANGNAM_STATION = { lat: 37.4979, lng: 127.0276 };
 
 export default function MainPage() {
     const navigate = useNavigate();
-    const [loading, error] = useKakaoLoader({
-        appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
-    });
+    const [loading, error] = useKakaoMapLoader();
 
     const { from, to } = useRouteSearch();
     const destination = to ?? DEFAULT_DESTINATION;
