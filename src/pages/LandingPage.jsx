@@ -121,15 +121,20 @@ export default function LandingPage() {
       const svgRect = svg.getBoundingClientRect();
       const biRect = bi.getBoundingClientRect();
       const k = svgRect.width / VIEW_W; // viewBox 1단위 = k px
+      // 레이아웃 전이거나 화면에서 사라진 상태(width 0)면 0으로 나눠 Infinity가 되므로 건너뛴다
+      if (!(k > 0)) return;
       const baselineY = biRect.top + m.fontAscent;
       const strokeTopY = baselineY - m.topFromBaseline;
 
-      setEnd({
+      const next = {
         x: (biRect.left + m.centerX - svgRect.left) / k,
         // ㅣ 획 안쪽으로 조금 더 내려가서 이음새가 보이지 않게
         y: (strokeTopY - svgRect.top) / k + 12,
         stroke: m.width / k,
-      });
+      };
+      // fontBoundingBoxAscent 미지원 브라우저 등에서 NaN이 나오면 기존 값 유지
+      if (!Object.values(next).every(Number.isFinite)) return;
+      setEnd(next);
     };
 
     update();
