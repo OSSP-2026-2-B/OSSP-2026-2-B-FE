@@ -9,7 +9,6 @@ import RiskLayer from "./main_risk_layer";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useRouteSearch } from "../../shared/routeSearchContext";
-import { PLACES } from "../../shared/data/places";
 import useRoutes from "../../features/route/hooks/useRoutes";
 import { getApiErrorMessage } from "../../shared/api/errors";
 import {
@@ -17,20 +16,17 @@ import {
     buildRouteCards,
     formatRain,
     formatUpdated,
-    groupHazards,
     lineToPath,
     toLatLng,
     toSheetHazard,
 } from "../../features/route/utils/formatRoute";
-
-const DEFAULT_DESTINATION = PLACES.yeoksamSchool;
 
 export default function MainPage() {
     const navigate = useNavigate();
     const [loading, error] = useKakaoMapLoader();
 
     const { from, to } = useRouteSearch();
-    const destination = to ?? DEFAULT_DESTINATION;
+    const destination = to;
     const route = useRoutes(from, destination);
 
     const routeCards = useMemo(() => buildRouteCards(route.data?.routes), [route.data]);
@@ -55,15 +51,11 @@ export default function MainPage() {
     // - 빠른 경로: 그 경로가 지나는 위험 구간
     // - 안전 경로: 빠른 경로에서 피한 구간 + 그래도 지나는 구간
     const openRouteRisk = (card) => {
-        const own = groupHazards(card.hazards).map((g) => toSheetHazard(g));
+        const own = card.dangerSections.map((section) => toSheetHazard(section));
         if (!card.safe) {
             setRiskContent({ title: "이 경로의 위험 구간", rainfall, hazards: own });
         } else {
-            const ownIds = new Set(card.hazards.map((h) => h.segment_id));
-            const shortest = routeCards.find((r) => r.mode === "shortest");
-            const avoided = groupHazards(
-                (shortest?.hazards ?? []).filter((h) => !ownIds.has(h.segment_id)),
-            ).map((g) => toSheetHazard(g, { avoided: true }));
+            const avoided = card.avoidedSections.map((section) => toSheetHazard(section, { avoided: true }));
             setRiskContent({ title: "왜 이 길을 피하나요?", rainfall, hazards: [...avoided, ...own] });
         }
         setRiskOpen(true);
@@ -114,7 +106,7 @@ export default function MainPage() {
                         className="absolute inset-0"
                         onCreate={setMap}
                     >
-                        <RiskLayer onSelect={openHazardRisk} />
+                        <RiskLayer key={from && destination ? "route" : "browse"} routeMode={Boolean(from && destination)} riskAreas={route.data?.risk_areas} onSelect={openHazardRisk} />
 
                         {/* 선택하지 않은 경로 먼저 (아래), 선택한 경로는 위에 */}
                         {routeCards
@@ -135,7 +127,7 @@ export default function MainPage() {
                         )}
                     </Map>
                     <div className="absolute top-4 left-4 right-4 z-10">
-                        <RouteSearchCard page="/main" defaultTo={DEFAULT_DESTINATION} />
+                        <RouteSearchCard page="/main"  />
                     </div>
                     {/* 접힌 시트의 원래 자리에서는 지도 터치를 통과시킵니다. */}
                     <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-20">
@@ -147,11 +139,13 @@ export default function MainPage() {
                             error={
                                 !from
                                     ? "출발지를 선택해 주세요."
+                                    : !destination
+                                      ? "목적지를 선택해 주세요."
                                     : route.error
                                       ? getApiErrorMessage(route.error)
                                       : null
                             }
-                            onRetry={from ? route.retry : undefined}
+                            onRetry={from && destination ? route.retry : undefined}
                             fallback={fallback}
                             updatedLabel={formatUpdated(route.data?.rain)}
                             onShowRisk={openRouteRisk}

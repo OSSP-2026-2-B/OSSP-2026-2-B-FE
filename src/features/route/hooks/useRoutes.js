@@ -3,6 +3,8 @@ import { postRoute } from '../api/routeApi'
 import { isCanceled } from '../../../shared/api/errors'
 import { getScenarioRainMm } from '../../../shared/scenario'
 
+const REFRESH_INTERVAL = 10 * 60 * 1000
+
 const MODES = ['shortest', 'balanced']
 
 // 출발·도착 좌표가 바뀔 때마다 경로를 다시 계산
@@ -37,6 +39,19 @@ export default function useRoutes(start, end) {
   }, [key, startLat, startLng, endLat, endLng])
 
   const retry = useCallback(() => setReloadKey((k) => k + 1), [])
+  useEffect(() => {
+    if (!ready) return
+    const refreshVisible = () => {
+      if (document.visibilityState === 'visible') retry()
+    }
+    const timer = setInterval(refreshVisible, REFRESH_INTERVAL)
+    document.addEventListener('visibilitychange', refreshVisible)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', refreshVisible)
+    }
+  }, [ready, retry])
+
   const settled = key !== null && result.key === key
 
   return {

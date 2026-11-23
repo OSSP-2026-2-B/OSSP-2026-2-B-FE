@@ -116,7 +116,12 @@ export default function RouteBottomSheet({
                     {ready && fallback ? "가까운 임시주거시설로 안내해요" : "조금 돌아도, 더 안전하게"}
                 </h2>
             </div>
-            {ready && updatedLabel && <span className="text-xs text-gray-400">{updatedLabel}</span>}
+            <div className="flex shrink-0 flex-col items-end gap-1">
+                {ready && updatedLabel && <span className="text-xs text-gray-400">{updatedLabel}</span>}
+                {ready && onRetry && (
+                    <button type="button" onClick={onRetry} className="text-xs text-[#1A2A47] underline">새로고침</button>
+                )}
+            </div>
             </div>
 
             {loading && (
@@ -183,7 +188,7 @@ export default function RouteBottomSheet({
 // ── 경로 카드 하나 ──
 function RouteCard({ route, selected, onSelect }) {
     const isSafe = route.safe;
-    const gradeStyle = GRADE_STYLE[route.maxGrade] ?? GRADE_STYLE["주의"];
+    const gradeStyle = GRADE_STYLE[route.routeGrade] ?? GRADE_STYLE["주의"];
 
     return (
         <button
@@ -226,32 +231,28 @@ function RouteCard({ route, selected, onSelect }) {
             {isSafe ? (
             <p className="flex flex-wrap items-center gap-1.5 mt-0.5 text-xs text-gray-600">
                 <span className="px-1.5 py-0.5 rounded bg-gray-100">+{route.detourMin}분</span>
-                {route.shortestRiskCount > 0 ? (
-                    <>
-                    위험 구간 {route.shortestRiskCount}개 중
-                    <span className="font-medium text-[#1A2A47]">{route.avoided}개 회피</span>
-                    </>
-                ) : (
-                    <span>위험 구간 {route.riskCount}개</span>
+                <span>{route.dangerLength > 0 ? `위험 구간 ${route.dangerLength}m 통과` : "위험 구간 없이 이동"}</span>
+                {route.reducedDangerLength > 0 && (
+                    <span className="font-medium text-[#1A2A47]">빠른 경로보다 {route.reducedDangerLength}m 감소</span>
                 )}
             </p>
-            ) : route.riskCount > 0 ? (
+            ) : route.dangerLength > 0 ? (
             <p className="flex items-center gap-1.5 mt-0.5 text-xs text-[#E24739]">
                 <DangerIcon className="w-[18px] h-[18px]" />
-                위험 구간 {route.riskCount}개 · {route.dangerLength}m 통과
+                위험 구간 {route.dangerLength}m 통과
             </p>
             ) : (
             <p className="mt-0.5 text-xs text-gray-600">지나는 위험 구간이 없어요</p>
             )}
         </div>
 
-        {/* 오른쪽 위험도 박스 (경로의 최고 등급) */}
+        {/* 오른쪽 위험도 박스 (경로 대표 등급) */}
         <div
             className={`flex flex-col items-center justify-center w-14 h-16 shrink-0 rounded-xl ${gradeStyle.box}`}
         >
             <span className="text-xs">위험도</span>
-            <span className={`font-bold ${route.maxGrade?.length > 2 ? "text-base" : "text-xl"}`}>
-                {route.maxGrade}
+            <span className={`font-bold ${route.routeGrade?.length > 2 ? "text-base" : "text-xl"}`}>
+                {route.routeGrade}
             </span>
         </div>
         </button>
