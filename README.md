@@ -27,11 +27,11 @@ cp .env.example .env
 `.env`에 백엔드 주소와 카카오 JavaScript 키를 설정해 주세요.
 
 ```dotenv
-VITE_API_BASE_URL=http://localhost:8080
-VITE_KAKAO_MAP_KEY=your_kakao_javascript_key
+VITE_API_BASE_URL=https://ossp-flood-route-api.onrender.com
+VITE_KAKAO_MAP_KEY=
 ```
 
-- `VITE_API_BASE_URL`: 백엔드 API 주소입니다. 배포 서버를 사용한다면 해당 주소로 변경해 주세요. `/api`는 붙이지 않습니다.
+- `VITE_API_BASE_URL`: 백엔드 API 주소입니다.
 - `VITE_KAKAO_MAP_KEY`: 카카오 JavaScript 키입니다. 카카오 앱에 프론트 접속 도메인을 등록해 주세요.
 
 ```bash
