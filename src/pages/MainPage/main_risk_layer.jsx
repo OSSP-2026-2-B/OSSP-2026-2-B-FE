@@ -1,14 +1,15 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { CustomOverlayMap, Polyline, useMap } from "react-kakao-maps-sdk";
+import { CustomOverlayMap, Polygon, useMap } from "react-kakao-maps-sdk";
 import api from "../../shared/api/axios";
-import { boundsToBbox, featureToSegment } from "./risk_layer_utils";
+import { boundsToBbox, featureToArea } from "./risk_layer_utils";
 import { getScenarioRainMm } from "../../shared/scenario";
 
-export default function RiskLayer({ onSelect }) {
+export default function RiskLayer({ onSelect, routeMode = false, riskAreas }) {
     const map = useMap();
     const [result, setResult] = useState(null);
 
     useEffect(() => {
+        if (routeMode) return;
         let timer;
         let controller;
         let disposed = false;
@@ -25,6 +26,7 @@ export default function RiskLayer({ onSelect }) {
                     const { data } = await api.get("/api/risk-layer", {
                         params: {
                             bbox: boundsToBbox(map.getBounds()),
+                            shape: "area",
                             // 시연 모드면 가상 강우로 계산 (null이면 axios가 파라미터를 생략)
                             rain_mm: getScenarioRainMm(),
                         },
@@ -50,23 +52,28 @@ export default function RiskLayer({ onSelect }) {
             controller?.abort();
             window.kakao.maps.event.removeListener(map, "idle", refresh);
         };
-    }, [map]);
+    }, [map, routeMode]);
 
     const segments = useMemo(
-        () => (result?.features ?? []).map(featureToSegment),
-        [result],
+        () => ((routeMode ? riskAreas : result)?.features ?? [])
+            .filter((feature) => feature.geometry?.type === "Polygon" &&
+                (feature.properties.excluded || ["위험", "고위험"].includes(feature.properties.grade)))
+            .map(featureToArea),
+        [result, routeMode, riskAreas],
     );
 
     return (
         <>
             {segments.map((segment) => (
                 <Fragment key={segment.id}>
-                    {/* 도로를 따라 등급 색으로 칠한다. 이웃 구간이 이어져 한 줄의 도로처럼 보이고, 경로 선(zIndex 1 이상)보다 아래에 깔린다. */}
-                    <Polyline
+                    {/* 경로 선 아래에 위험 구역의 면과 구멍을 표시합니다. */}
+                    <Polygon
                         path={segment.path}
-                        strokeWeight={segment.excluded ? 7 : 5}
+                        strokeWeight={1}
                         strokeColor={segment.color}
                         strokeOpacity={segment.excluded ? 0.85 : 0.5}
+                        fillColor={segment.color}
+                        fillOpacity={0.25}
                         zIndex={0}
                         onClick={() => onSelect(segment)}
                     />

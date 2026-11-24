@@ -1,25 +1,36 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import {
-  AppIcon, BuildingIcon, HomeIcon, NavigationIcon,
-  SubwayIcon,
-} from '../../assets';
+import { AppIcon, NavigationIcon } from '../../assets';
 import PrimaryButton from '../../shared/ui/PrimaryButton';
 import RouteSearchCard from '../../shared/ui/RouteSearchCard';
 import { useRouteSearch } from '../../shared/routeSearchContext';
 import RainObservationCard from './RainObservationCard';
-import { PLACES } from '../../shared/data/places';
+import { loadFrequentPlaces } from '../SearchPage/recentPlaces';
 import { wakeServer } from '../../shared/api/health';
-
-const favorites = [
-  { label: '집으로 가기', caption: '서초구 서초동', place: PLACES.home, icon: HomeIcon },
-  { label: '학교로 가기', caption: '역삼초등학교', place: PLACES.yeoksamSchool, icon: BuildingIcon },
-  { label: '자주 가는 곳', caption: '강남역 11번 출구', place: PLACES.gangnamExit11, icon: SubwayIcon },
-];
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { setTo } = useRouteSearch();
+  const [favorites, setFavorites] = useState(() => loadFrequentPlaces());
+
+  useEffect(() => {
+    const refresh = () => setFavorites(loadFrequentPlaces());
+    window.addEventListener('storage', refresh);
+    window.addEventListener('focus', refresh);
+    return () => {
+      window.removeEventListener('storage', refresh);
+      window.removeEventListener('focus', refresh);
+    };
+  }, []);
+  const { from, to, setTo, setSearchTarget } = useRouteSearch();
+
+  const findRoute = () => {
+    if (!from || !to) {
+      setSearchTarget({ page: '/home', field: !from ? 'from' : 'to' });
+      navigate('/search');
+      return;
+    }
+    navigate('/main');
+  };
 
   // 잠든 배포 서버를 미리 깨워 경로 화면에서 기다리지 않게
   useEffect(() => {
@@ -37,7 +48,7 @@ export default function HomePage() {
       {/* 경로 검색 */}
       <section className="mt-9" aria-label="경로 검색">
         <RouteSearchCard page="/home" />
-        <PrimaryButton className="mt-5" icon={NavigationIcon} onClick={() => navigate('/main')}>안전 경로 찾기</PrimaryButton>
+        <PrimaryButton className="mt-5" icon={NavigationIcon} onClick={findRoute}>안전 경로 찾기</PrimaryButton>
       </section>
 
       {/* 현재 강우 상황 */}
@@ -46,18 +57,28 @@ export default function HomePage() {
         <RainObservationCard />
       </section>
 
-      {/* 추천 목적지 */}
+      {/* 실제로 선택한 장소의 빈도 기반 추천 */}
       <section className="mt-8" aria-labelledby="favorite-heading">
-        <h2 id="favorite-heading" className="flex items-center gap-2 text-lg font-bold">추천 목적지</h2>
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {favorites.map(({ label, caption, place, icon: Icon }) => (
-            <button key={label} type="button" onClick={() => setTo(place)} className="flex min-w-0 flex-col items-center rounded-2xl border border-gray-200 bg-white px-2 py-3 text-center active:bg-gray-100">
-              <span className={`flex size-12 items-center justify-center rounded-xl bg-gray-200`} ><Icon className="size-6" aria-hidden="true" /></span>
-              <span className="mt-2 text-sm font-bold">{label}</span>
-              <span className="mt-1 w-full truncate text-xs text-[#6F7B75]">{caption}</span>
-            </button>
-          ))}
-        </div>
+        <h2 id="favorite-heading" className="text-lg font-bold">자주 찾은 곳</h2>
+        {favorites.length > 0 ? (
+          <div className="mt-4 grid gap-2">
+            {favorites.map((place) => (
+              <button
+                key={place.id}
+                type="button"
+                onClick={() => setTo(place)}
+                aria-label={`${place.address} 목적지로 선택`}
+                className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-left text-sm font-medium text-[#1A2A47] break-words active:bg-gray-100"
+              >
+                {place.address}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-4 rounded-2xl border border-gray-200 px-4 py-6 text-sm text-gray-500">
+            장소를 검색하고 선택하면 자주 찾은 주소가 여기에 표시돼요.
+          </p>
+        )}
       </section>
     </main>
   );

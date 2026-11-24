@@ -26,9 +26,9 @@ export function buildRouteCards(routes = []) {
   const shortest = routes.find((r) => r.mode === 'shortest')
   return routes.map((route) => {
     const meta = MODE_META[route.mode] ?? { name: route.mode, safe: false }
-    const avoided = shortest && route.mode !== 'shortest'
-      ? Math.max(shortest.risk_segment_count - route.risk_segment_count, 0)
-      : 0
+    const avoidedSections = route.mode !== 'shortest'
+      ? getAvoidedSections(shortest?.danger_sections, route.danger_sections)
+      : []
     return {
       mode: route.mode,
       name: meta.name,
@@ -37,11 +37,14 @@ export function buildRouteCards(routes = []) {
       time: route.duration_min,
       distanceKm: (route.distance_m / 1000).toFixed(1),
       detourMin: route.detour_min,
-      riskCount: route.risk_segment_count,
+      riskCount: route.danger_section_count,
       dangerLength: route.danger_length_m,
-      shortestRiskCount: shortest?.risk_segment_count ?? 0,
-      avoided,
-      maxGrade: route.max_grade,
+      reducedDangerLength: shortest
+        ? Math.max(shortest.danger_length_m - route.danger_length_m, 0)
+        : 0,
+      avoidedSections,
+      dangerSections: route.danger_sections ?? [],
+      routeGrade: route.route_grade,
       path: lineToPath(route.geometry),
       hazards: route.hazards ?? [],
     }
@@ -55,57 +58,24 @@ function distanceM([lng1, lat1], [lng2, lat2]) {
   return Math.hypot(dx, dy)
 }
 
-/**
- * 이어진(25m 단위) 같은 등급·같은 이유의 구간을 하나로 묶기
- * hazards 는 경로 순서로 오고, 구간 가운데끼리 40m 이내면 이어진 것으로 봄
- */
-export function groupHazards(hazards = []) {
-  const groups = []
-  for (const hazard of hazards) {
-    const last = groups.at(-1)
-    const reasonKey = hazard.reasons.join('|')
-    const continuous = last
-      && last.grade === hazard.grade
-      && last.reasonKey === reasonKey
-      && distanceM(last.locations.at(-1), hazard.location) <= 40
-    if (continuous) {
-      last.segmentIds.push(hazard.segment_id)
-      last.locations.push(hazard.location)
-      last.risk = Math.max(last.risk, hazard.risk)
-    } else {
-      groups.push({
-        grade: hazard.grade,
-        reasons: hazard.reasons,
-        reasonKey,
-        risk: hazard.risk,
-        segmentIds: [hazard.segment_id],
-        locations: [hazard.location],
-      })
-    }
-  }
-  return groups.map((g) => ({
-    id: `seg-${g.segmentIds[0]}`,
-    grade: g.grade,
-    reasons: g.reasons,
-    risk: g.risk,
-    segmentIds: g.segmentIds,
-    // 묶음 가운데 구간 위치
-    center: toLatLng(g.locations[Math.floor(g.locations.length / 2)]),
-    count: g.segmentIds.length,
-  }))
+/** 최단 경로의 장소 중 선택한 경로와 구간이 하나도 겹치지 않는 곳 */
+export function getAvoidedSections(shortestSections = [], ownSections = []) {
+  const ownIds = new Set(ownSections.flatMap((section) => section.segment_ids))
+  return shortestSections.filter((section) => !section.segment_ids.some((id) => ownIds.has(id)))
 }
 
-/** 묶은 구간 → 위험 근거 시트 카드 */
-export function toSheetHazard(group, { avoided = false } = {}) {
-  const lengthText = group.count > 1 ? ` 약 ${group.count * 25}m` : ''
+/** 서버가 묶은 장소 → 위험 근거 시트 카드 */
+export function toSheetHazard(section, { avoided = false } = {}) {
   return {
-    id: group.id,
-    name: `${group.grade} 구간${lengthText}`,
+    id: `section-${section.segment_ids.join('-')}`,
+    name: `${section.grade} 구간 약 ${section.length_m}m`,
     level: 'danger',
-    label: group.grade,
+    label: section.grade,
     type: 'danger',
-    description: `${avoided ? '빠른 경로가 지나는 구간이에요. ' : ''}위험도 ${Math.round(group.risk * 100)}%`,
-    tags: group.reasons,
+    description: avoided
+      ? '빠른 경로가 지나지만 이 경로에서는 피하는 곳이에요.'
+      : `이 경로에서 위험 구간 ${section.length_m}m를 지나가요.`,
+    tags: section.reasons,
   }
 }
 
