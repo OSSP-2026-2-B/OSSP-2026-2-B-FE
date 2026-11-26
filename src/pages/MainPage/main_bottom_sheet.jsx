@@ -4,13 +4,11 @@ import {
     ClockIcon,
     DangerIcon,
     RightIcon,
-    NavigationIcon,
 } from "../../assets/index";
-import PrimaryButton from "../../shared/ui/PrimaryButton";
 import { GRADE_STYLE } from "../../features/route/utils/formatRoute";
 
     // 시트 크기 (px)
-    const SHEET_HEIGHT = 388;
+    const SHEET_HEIGHT = 400;
     const PEEK_HEIGHT = 38; // 접었을 때 보이는 높이 (손잡이 부분)
     const MAX_OFFSET = SHEET_HEIGHT - PEEK_HEIGHT; // 최대로 내려가는 거리
     const DRAG_THRESHOLD = 60; // 이만큼 이상 끌어야 열림/닫힘이 바뀜
@@ -83,8 +81,8 @@ export default function RouteBottomSheet({
 
     return (
         <section
-        style={{ transform: `translateY(${offset}px)` }}
-        className={`pointer-events-auto flex flex-col w-full max-w-[403px] h-[388px] mx-auto px-4 pb-3 bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.08)] ${
+        style={{ height: SHEET_HEIGHT, transform: `translateY(${offset}px)` }}
+        className={`pointer-events-auto flex flex-col w-full max-w-[403px] mx-auto px-4 pb-3 bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.08)] ${
             isDragging ? "" : "transition-transform duration-300 ease-out"
         }`}
         >
@@ -111,9 +109,8 @@ export default function RouteBottomSheet({
             {/* 제목 */}
             <div className="flex items-end justify-between mb-2">
             <div>
-                <p className="text-xs font-medium text-[#1A2A47]">추천 경로 비교</p>
                 <h2 className="text-xl font-bold text-gray-900">
-                    {ready && fallback ? "가까운 임시주거시설로 안내해요" : "조금 돌아도, 더 안전하게"}
+                    {ready && fallback ? "가까운 임시주거시설로 안내해요" : "추천 경로 비교"}
                 </h2>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
@@ -147,6 +144,14 @@ export default function RouteBottomSheet({
 
             {ready && routes.length > 0 && (
                 <>
+                {/* 어느 길로 가도 지나야 하는 위험 구간이 있으면 한 번만 안내 (값은 모든 경로에 공통) */}
+                {routes[0].unavoidableDanger > 0 && (
+                    <p className="flex items-start gap-1.5 mb-2 px-3 py-2 rounded-xl bg-[#FFF6DC] text-xs text-[#8A6200]">
+                        <DangerIcon className="w-[18px] h-[18px] shrink-0 text-[#D99A00]" />
+                        출발지·도착지 주변이 침수 구역이라 최소 {routes[0].unavoidableDanger}m는 어느 길로 가도 지나야 해요
+                    </p>
+                )}
+
                 {/* 경로 카드 목록 */}
                 <div className="flex flex-col gap-2">
                 {routes.map((route) => (
@@ -171,16 +176,6 @@ export default function RouteBottomSheet({
                 </>
             )}
         </div>
-
-        {/* ── 출발 버튼 ── */}
-        {ready && (selected || fallback?.reachable) && (
-            <PrimaryButton
-                icon={NavigationIcon}
-                className="shrink-0 active:scale-[0.98] transition-transform"
-            >
-                {selected ? `${selected.name}로 출발` : "임시주거시설로 출발"}
-            </PrimaryButton>
-        )}
         </section>
     );
 }
@@ -231,7 +226,13 @@ function RouteCard({ route, selected, onSelect }) {
             {isSafe ? (
             <p className="flex flex-wrap items-center gap-1.5 mt-0.5 text-xs text-gray-600">
                 <span className="px-1.5 py-0.5 rounded bg-gray-100">+{route.detourMin}분</span>
-                <span>{route.dangerLength > 0 ? `위험 구간 ${route.dangerLength}m 통과` : "위험 구간 없이 이동"}</span>
+                <span className={route.dangerLength === 0 && route.cautionLength > 0 ? "text-[#D99A00]" : ""}>
+                    {route.dangerLength > 0
+                        ? `위험 구간 ${route.dangerLength}m 통과`
+                        : route.cautionLength > 0
+                          ? `주의 구간 ${route.cautionLength}m 통과`
+                          : "위험 구간 없이 이동"}
+                </span>
                 {route.reducedDangerLength > 0 && (
                     <span className="font-medium text-[#1A2A47]">빠른 경로보다 {route.reducedDangerLength}m 감소</span>
                 )}
@@ -240,6 +241,11 @@ function RouteCard({ route, selected, onSelect }) {
             <p className="flex items-center gap-1.5 mt-0.5 text-xs text-[#E24739]">
                 <DangerIcon className="w-[18px] h-[18px]" />
                 위험 구간 {route.dangerLength}m 통과
+            </p>
+            ) : route.cautionLength > 0 ? (
+            <p className="flex items-center gap-1.5 mt-0.5 text-xs text-[#D99A00]">
+                <DangerIcon className="w-[18px] h-[18px]" />
+                주의 구간 {route.cautionLength}m 통과
             </p>
             ) : (
             <p className="mt-0.5 text-xs text-gray-600">지나는 위험 구간이 없어요</p>

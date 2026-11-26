@@ -29,7 +29,9 @@ export default function MainPage() {
     const destination = to;
     const route = useRoutes(from, destination);
 
-    const routeCards = useMemo(() => buildRouteCards(route.data?.routes), [route.data]);
+    const routeCards = useMemo(() => buildRouteCards(route.data?.routes, route.data?.unavoidable_danger_m),
+        [route.data],
+    );
     const fallback = route.data?.fallback ?? null;
     const rainfall = formatRain(route.data?.rain);
 
@@ -88,7 +90,7 @@ export default function MainPage() {
         const bounds = new kakao.maps.LatLngBounds();
         boundsPoints.forEach((p) => bounds.extend(new kakao.maps.LatLng(p.lat, p.lng)));
         // 위: 검색 카드, 아래: 바텀시트 만큼 여백
-        map.setBounds(bounds, 170, 30, 400, 30);
+        map.setBounds(bounds, 170, 30, 452, 30);
     }, [map, boundsPoints]);
 
     return (
