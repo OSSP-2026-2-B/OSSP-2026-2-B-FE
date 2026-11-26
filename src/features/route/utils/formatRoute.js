@@ -21,9 +21,14 @@ export const GRADE_STYLE = {
   고위험: { box: 'bg-[#FFE1DC] text-[#C3271A]', stroke: '#A3271A', fill: '#E24739', line: '#D62F24' },
 }
 
-/** routes[] → 비교 카드 목록 */
-export function buildRouteCards(routes = []) {
+/**
+ * routes[] → 비교 카드 목록
+ * @param {object[]} routes
+ * @param {number|null} unavoidableDangerM  응답 최상위 unavoidable_danger_m (어느 길로 가도 지나야 하는 위험 거리)
+ */
+export function buildRouteCards(routes = [], unavoidableDangerM = 0) {
   const shortest = routes.find((r) => r.mode === 'shortest')
+  const unavoidable = unavoidableDangerM ?? 0
   return routes.map((route) => {
     const meta = MODE_META[route.mode] ?? { name: route.mode, safe: false }
     const avoidedSections = route.mode !== 'shortest'
@@ -39,6 +44,10 @@ export function buildRouteCards(routes = []) {
       detourMin: route.detour_min,
       riskCount: route.danger_section_count,
       dangerLength: route.danger_length_m,
+      cautionLength: route.caution_length_m ?? 0,
+      unavoidableDanger: unavoidable,
+      // 이 경로에서 피할 수 있었던 위험 거리 (0 이면 이미 가장 덜 위험한 경로)
+      avoidableDanger: Math.max(route.danger_length_m - unavoidable, 0),
       reducedDangerLength: shortest
         ? Math.max(shortest.danger_length_m - route.danger_length_m, 0)
         : 0,
