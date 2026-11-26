@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { RotateCw } from "lucide-react";
 import {
     SafeIcon,
     ClockIcon,
@@ -108,24 +109,29 @@ export default function RouteBottomSheet({
             className="flex flex-col items-center shrink-0 w-full pt-2 pb-1 touch-none select-none cursor-grab active:cursor-grabbing"
         >
             <span className="w-10 h-1 rounded-full bg-gray-300" />
-            <span className="mt-1 text-xs text-gray-500">
-            {collapsed ? "위로 올려 경로 보기" : "아래로 밀어 지도 넓게 보기"}
-            </span>
         </div>
 
         {/* ── 내용: 남는 높이를 차지하고, 넘치면 스크롤 ── */}
         <div className="flex-1 min-h-0 overflow-y-auto">
             {/* 제목 */}
-            <div className="flex items-end justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
             <div>
                 <h2 className="text-xl font-bold text-gray-900">
                     {ready && fallback ? "가까운 임시주거시설로 안내해요" : "추천 경로 비교"}
                 </h2>
             </div>
-            <div className="flex shrink-0 flex-col items-end gap-1">
+            <div className="flex shrink-0 items-center gap-1.5">
                 {ready && updatedLabel && <span className="text-xs text-gray-400">{updatedLabel}</span>}
                 {ready && onRetry && (
-                    <button type="button" onClick={onRetry} className="text-xs text-[#1A2A47] underline">새로고침</button>
+                    <button
+                        type="button"
+                        onClick={onRetry}
+                        aria-label="새로고침"
+                        title="새로고침"
+                        className="p-1 -m-1 rounded-full text-[#1A2A47] hover:bg-gray-100 active:bg-gray-200"
+                    >
+                        <RotateCw size={16} />
+                    </button>
                 )}
             </div>
             </div>
