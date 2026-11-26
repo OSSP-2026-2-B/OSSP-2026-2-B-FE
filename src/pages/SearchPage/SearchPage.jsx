@@ -48,7 +48,7 @@ export default function SearchPage() {
             autoFocus
             aria-label={searchLabel}
             placeholder={searchLabel}
-            className="min-w-0 flex-1 bg-transparent text-sm text-[#1A2A47] outline-none placeholder:text-gray-500"
+            className="min-w-0 flex-1 bg-transparent text-base text-[#1A2A47] outline-none placeholder:text-gray-500"
           />
         </div>
       </header>

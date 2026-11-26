@@ -7,14 +7,15 @@ import {
 } from "../../assets/index";
 import { GRADE_STYLE } from "../../features/route/utils/formatRoute";
 
-    // 시트 크기 (px)
-    const SHEET_HEIGHT = 400;
-    const PEEK_HEIGHT = 38; // 접었을 때 보이는 높이 (손잡이 부분)
-    const MAX_OFFSET = SHEET_HEIGHT - PEEK_HEIGHT; // 최대로 내려가는 거리
-    const DRAG_THRESHOLD = 60; // 이만큼 이상 끌어야 열림/닫힘이 바뀜
+// 시트 크기 (px)
+export const PEEK_HEIGHT = 38; // 접었을 때 보이는 높이 (손잡이 부분)
+const DRAG_THRESHOLD = 60; // 이만큼 이상 끌어야 열림/닫힘이 바뀜
 
 /**
  * 경로 비교 바텀시트
+ * @param {number} height         펼쳤을 때 시트 높이 (화면 크기에 맞춰 부모가 계산)
+ * @param {boolean} collapsed     접힘 여부
+ * @param {function} onCollapsedChange (collapsed) => void
  * @param {object[]} routes       buildRouteCards 결과
  * @param {object|null} selected  선택된 경로 카드
  * @param {function} onSelect     (mode) => void
@@ -26,6 +27,9 @@ import { GRADE_STYLE } from "../../features/route/utils/formatRoute";
  * @param {function} onShowRisk   (route) => void
  */
 export default function RouteBottomSheet({
+    height = 400,
+    collapsed = false,
+    onCollapsedChange,
     routes = [],
     selected = null,
     onSelect,
@@ -36,7 +40,8 @@ export default function RouteBottomSheet({
     updatedLabel = "",
     onShowRisk,
 }) {
-    const [collapsed, setCollapsed] = useState(false);
+    const setCollapsed = (next) => onCollapsedChange?.(next);
+    const MAX_OFFSET = height - PEEK_HEIGHT; // 최대로 내려가는 거리
     const [dragOffset, setDragOffset] = useState(null); // 드래그 중일 때만 숫자, 아니면 null
 
     const startY = useRef(0); // 손가락을 처음 댄 위치
@@ -81,8 +86,12 @@ export default function RouteBottomSheet({
 
     return (
         <section
-        style={{ height: SHEET_HEIGHT, transform: `translateY(${offset}px)` }}
-        className={`pointer-events-auto flex flex-col w-full max-w-[403px] mx-auto px-4 pb-3 bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.08)] ${
+        // 접힐수록 홈 인디케이터(safe-area) 만큼 덜 내려가서 손잡이가 가려지지 않게
+        style={{
+            height,
+            transform: `translateY(calc(${offset}px - ${MAX_OFFSET > 0 ? offset / MAX_OFFSET : 0} * env(safe-area-inset-bottom)))`,
+        }}
+        className={`pointer-events-auto flex flex-col w-full max-w-[403px] mx-auto px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] bg-white rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.08)] ${
             isDragging ? "" : "transition-transform duration-300 ease-out"
         }`}
         >
