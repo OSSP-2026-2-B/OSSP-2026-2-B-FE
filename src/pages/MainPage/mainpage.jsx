@@ -3,7 +3,7 @@ import { Map } from "react-kakao-maps-sdk";
 import { GANGNAM_STATION, useKakaoMapLoader } from "../../shared/kakao";
 import { EndPin, RouteLine, StartPin } from "../../features/route/components/MapRouteLayer";
 import RouteSearchCard from "../../shared/ui/RouteSearchCard";
-import RouteBottomSheet from "./main_bottom_sheet";
+import RouteBottomSheet, { PEEK_HEIGHT } from "./main_bottom_sheet";
 import RiskReasonSheet from "./main_risk_sheet";
 import RiskLayer from "./main_risk_layer";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -20,6 +20,27 @@ import {
     toLatLng,
     toSheetHazard,
 } from "../../features/route/utils/formatRoute";
+
+// 바텀시트 높이: 지도 영역의 55%, 최소 240px ~ 최대 400px
+const SHEET_MAX = 400;
+const SHEET_MIN = 240;
+const SHEET_RATIO = 0.55;
+const CARD_TOP = 16; // 검색 카드 위치 (top-4)
+const MAP_GAP = 12; // 경로와 카드·시트 사이 여백
+const MIN_ROUTE_AREA = 120; // 경로가 그려질 최소 높이
+
+// 요소 높이를 지켜봄 (모바일 주소창이 접히고 펴질 때도 갱신)
+function useElementHeight() {
+    const [node, setNode] = useState(null);
+    const [height, setHeight] = useState(0);
+    useEffect(() => {
+        if (!node) return;
+        const observer = new ResizeObserver(([entry]) => setHeight(entry.contentRect.height));
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, [node]);
+    return [setNode, height];
+}
 
 export default function MainPage() {
     const navigate = useNavigate();
@@ -76,6 +97,14 @@ export default function MainPage() {
 
     const closeRiskSheet = useCallback(() => setRiskOpen(false), []);
 
+    // 화면 크기에 맞춘 바텀시트 높이
+    const [mainRef, mainHeight] = useElementHeight();
+    const [cardRef, cardHeight] = useElementHeight();
+    const sheetHeight = mainHeight
+        ? Math.round(Math.min(SHEET_MAX, Math.max(SHEET_MIN, mainHeight * SHEET_RATIO)))
+        : SHEET_MAX;
+    const [sheetCollapsed, setSheetCollapsed] = useState(false);
+
     // 경로가 바뀌면 지도 범위를 경로에 맞춤
     const [map, setMap] = useState(null);
     const boundsPoints = useMemo(() => {
@@ -84,19 +113,34 @@ export default function MainPage() {
         return points;
     }, [routeCards, shelterPath, from, destination]);
 
+    // 지도 영역 크기가 바뀌면 카카오맵도 다시 배치
+    useEffect(() => {
+        if (map && mainHeight) map.relayout();
+    }, [map, mainHeight]);
+
     useEffect(() => {
         const kakao = window.kakao;
-        if (!map || !kakao || boundsPoints.length === 0) return;
+        if (!map || !kakao || !mainHeight || boundsPoints.length === 0) return;
         const bounds = new kakao.maps.LatLngBounds();
         boundsPoints.forEach((p) => bounds.extend(new kakao.maps.LatLng(p.lat, p.lng)));
-        // 위: 검색 카드, 아래: 바텀시트 만큼 여백
-        map.setBounds(bounds, 170, 30, 452, 30);
-    }, [map, boundsPoints]);
+
+        // 위: 검색 카드, 아래: 보이는 바텀시트 만큼 여백.
+        // 여백이 지도보다 크면 카카오맵이 크게 축소되므로, 경로 영역을 최소 높이만큼 남긴다.
+        let top = CARD_TOP + cardHeight + MAP_GAP;
+        let bottom = (sheetCollapsed ? PEEK_HEIGHT : sheetHeight) + MAP_GAP;
+        const room = mainHeight - top - bottom;
+        if (room < MIN_ROUTE_AREA) {
+            const scale = Math.max(0, mainHeight - MIN_ROUTE_AREA) / (top + bottom);
+            top = Math.round(top * scale);
+            bottom = Math.round(bottom * scale);
+        }
+        map.setBounds(bounds, top, 24, bottom, 24);
+    }, [map, boundsPoints, mainHeight, cardHeight, sheetHeight, sheetCollapsed]);
 
     return (
-        <div className="flex flex-col h-dvh max-w-md mx-auto">
+        <div className="flex flex-col h-dvh max-w-md mx-auto overscroll-none">
             <Header onBack={() => navigate('/home')} />
-            <main className="relative flex-1 overflow-hidden">
+            <main ref={mainRef} className="relative flex-1 overflow-hidden">
                 {loading && <p className="p-4 text-sm text-gray-500">지도 불러오는 중...</p>}
                 {error && <p className="p-4 text-sm text-red-500">지도를 불러오지 못했어요</p>}
 
@@ -128,12 +172,15 @@ export default function MainPage() {
                             destination && <EndPin position={{ lat: destination.lat, lng: destination.lng }} />
                         )}
                     </Map>
-                    <div className="absolute top-4 left-4 right-4 z-10">
-                        <RouteSearchCard page="/main"  />
+                    <div ref={cardRef} className="absolute top-4 left-4 right-4 z-10">
+                        <RouteSearchCard page="/main" compact />
                     </div>
                     {/* 접힌 시트의 원래 자리에서는 지도 터치를 통과시킵니다. */}
                     <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-20">
                         <RouteBottomSheet
+                            height={sheetHeight}
+                            collapsed={sheetCollapsed}
+                            onCollapsedChange={setSheetCollapsed}
                             routes={routeCards}
                             selected={selected}
                             onSelect={setSelectedMode}

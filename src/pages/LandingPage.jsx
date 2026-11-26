@@ -81,7 +81,14 @@ function RouteIllustration({ svgRef, end }) {
   const d = `M152 0 C150 90 80 190 80 270 C80 340 150 370 200 395 C245 418 ${ex} ${ey - 90} ${ex} ${ey}`;
 
   return (
-    <svg ref={svgRef} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} className="block w-full overflow-visible" aria-hidden="true">
+    // 남는 높이를 꽉 채우고(slice) 아래쪽을 기준으로 맞춰서, 화면이 낮으면 그림 위쪽이 잘린다
+    <svg
+      ref={svgRef}
+      viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+      preserveAspectRatio="xMidYMax slice"
+      className="absolute inset-0 block size-full overflow-visible"
+      aria-hidden="true"
+    >
       {raindrops.map(({ x, y, s, d: delay }, i) => (
         <g key={i} transform={`translate(${x} ${y}) scale(${s})`}>
           <path
@@ -118,19 +125,20 @@ export default function LandingPage() {
       const m = measureVerticalStroke(bi);
       if (!m) return;
 
-      const svgRect = svg.getBoundingClientRect();
+      // 화면 좌표 → viewBox 좌표 (preserveAspectRatio로 생긴 배율·여백까지 반영)
+      const ctm = svg.getScreenCTM();
+      // 레이아웃 전이거나 화면에서 사라진 상태(크기 0)면 역변환이 안 되므로 건너뛴다
+      if (!ctm || !(ctm.a > 0)) return;
       const biRect = bi.getBoundingClientRect();
-      const k = svgRect.width / VIEW_W; // viewBox 1단위 = k px
-      // 레이아웃 전이거나 화면에서 사라진 상태(width 0)면 0으로 나눠 Infinity가 되므로 건너뛴다
-      if (!(k > 0)) return;
       const baselineY = biRect.top + m.fontAscent;
       const strokeTopY = baselineY - m.topFromBaseline;
+      const top = new DOMPoint(biRect.left + m.centerX, strokeTopY).matrixTransform(ctm.inverse());
 
       const next = {
-        x: (biRect.left + m.centerX - svgRect.left) / k,
+        x: top.x,
         // ㅣ 획 안쪽으로 조금 더 내려가서 이음새가 보이지 않게
-        y: (strokeTopY - svgRect.top) / k + 12,
-        stroke: m.width / k,
+        y: top.y + 12,
+        stroke: m.width / ctm.a,
       };
       // fontBoundingBoxAscent 미지원 브라우저 등에서 NaN이 나오면 기존 값 유지
       if (!Object.values(next).every(Number.isFinite)) return;
@@ -139,31 +147,44 @@ export default function LandingPage() {
 
     update();
     document.fonts?.ready.then(update);
+    // 모바일 주소창이 접히고 펴질 때도 그림 영역 크기가 바뀌므로 요소 크기를 직접 지켜본다
+    const observer = new ResizeObserver(update);
+    if (svgRef.current) observer.observe(svgRef.current);
     window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', update);
+    };
   }, []);
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[403px] flex-col bg-[#FAFAFA] text-[#212833]">
-      <RouteIllustration svgRef={svgRef} end={end} />
+    // 배경은 화면 전체 폭, 내용은 가운데 열(최대 480px)
+    <div className="min-h-dvh w-full bg-[#FAFAFA]">
+      {/* 한 화면(dvh)에 다 들어가게: 글자·버튼 높이를 먼저 잡고 그림이 남는 높이를 채운다.
+          글자·간격은 화면 폭(vw)과 높이(dvh) 중 작은 쪽에 맞춰 함께 커지고 작아진다. */}
+      <main className="mx-auto flex h-dvh min-h-[320px] w-full max-w-[480px] flex-col overflow-hidden text-[#212833]">
+        <div className="relative min-h-0 flex-1">
+          <RouteIllustration svgRef={svgRef} end={end} />
+        </div>
 
-      <div className="flex flex-1 flex-col px-6 pb-12">
-        <h1 className="mt-4 text-[96px] font-black leading-none tracking-tighter">
-          비켜<span ref={lastBiRef}>비</span>
-        </h1>
-        <p className="mt-10 break-keep text-lg font-bold leading-relaxed">
-          비오는 날 침수위험구역 피해서<br />안내하는 보행 내비게이션 서비스
-        </p>
+        <div className="flex shrink-0 flex-col px-[clamp(20px,6vw,32px)] pb-[max(clamp(16px,4dvh,40px),env(safe-area-inset-bottom))]">
+          <h1 className="mt-[clamp(8px,2dvh,20px)] text-[clamp(56px,min(26vw,13dvh),128px)] font-black leading-none tracking-tighter">
+            비켜<span ref={lastBiRef}>비</span>
+          </h1>
+          <p className="mt-[clamp(12px,4dvh,40px)] break-keep text-[clamp(15px,min(4.8vw,2.6dvh),22px)] font-bold leading-relaxed">
+            비오는 날 침수위험구역 피해서<br />안내하는 보행 내비게이션 서비스
+          </p>
 
-        <button
-          type="button"
-          onClick={() => navigate('/home')}
-          className="mt-auto flex h-15 w-full items-center justify-between rounded-2xl bg-[#212833] px-6 text-lg font-[600] text-[#FAFAFA]"
-        >
-          <span>길찾기 시작하기</span>
-          <Search className="size-6" strokeWidth={2.5} aria-hidden="true" />
-        </button>
-      </div>
-    </main>
+          <button
+            type="button"
+            onClick={() => navigate('/home')}
+            className="mt-[clamp(20px,6dvh,56px)] flex h-[clamp(52px,7.5dvh,64px)] w-full items-center justify-between rounded-2xl bg-[#212833] px-6 text-[clamp(16px,min(4.8vw,2.6dvh),20px)] font-[600] text-[#FAFAFA]"
+          >
+            <span>길찾기 시작하기</span>
+            <Search className="size-6" strokeWidth={2.5} aria-hidden="true" />
+          </button>
+        </div>
+      </main>
+    </div>
   );
 }
